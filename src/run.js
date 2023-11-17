@@ -1,9 +1,11 @@
 import SessionRouter from "./routers/session.router.js";
 
-export default run= (app) => {
+const run= (app) => {
 
     //instancio routers
     const sessionRouter= new SessionRouter();
 
-    app.use("/api/session", sessionRouter.getRouter())
-}
+    app.use("/api/session", sessionRouter.getRouter());
+};
+
+export default run;
