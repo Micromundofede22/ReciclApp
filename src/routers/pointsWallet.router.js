@@ -3,14 +3,14 @@ import {getByIdPointsWallet,getWallets,createWallet,updateWallet, deleteWallet} 
 
 export default class PointsWalletRouter extends AppRouter{
     init(){
-        this.get("/:wid", getByIdPointsWallet);
-
         this.get("/", getWallets);
+        
+        this.get("/:wid", getByIdPointsWallet);
 
         this.post("/", createWallet);
 
         this.put("/:wid", updateWallet);
 
-        this.delete("/:wid", deleteWallet)
+        this.delete("/:wid", deleteWallet);
     }
 }

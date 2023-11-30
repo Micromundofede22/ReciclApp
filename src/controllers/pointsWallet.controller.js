@@ -40,10 +40,13 @@ export const createWallet = async (req, res) => {
 export const updateWallet = async (req, res) => {
   try {
     const wid = req.params.wid;
-    const data = req.body;
+    const data = req.body.notEnabledPoints;
+    // console.log(data);
     const wallet = await PointsWalletService.getById(wid);
     if (!wallet) return res.sendRequestError("Id incorrecto");
-    //solo editar puntos aun no habilitados, no habilitados. solo el user puede acceder a esto
+
+    //solo editar puntos aun no habilitados. solo el user puede acceder a esto,
+    // para poder eliminar o editar lo q subió, antes q controle el recolector
     const result = await PointsWalletService.update(wid, {
       notEnabledPoints: data,
     });
