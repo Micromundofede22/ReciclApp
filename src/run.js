@@ -12,10 +12,10 @@ const run = (app) => {
     const shiftrouter= new ShiftRouter();
 
     //endpoint
-    app.use("/api/session", sessionRouter.getRouter());
-    app.use("/api/recycled-products", recycledproductsrouter.getRouter());
-    app.use("/api/points-wallet", pointswalletrouter.getRouter()); 
-    app.use("/api/shift", shiftrouter.getRouter());
+    app.use("/api/session", sessionRouter.getRouter());                    //sesiones
+    app.use("/api/recycled-products", recycledproductsrouter.getRouter()); //productos a reciclar
+    app.use("/api/points-wallet", pointswalletrouter.getRouter());         //biletera puntos
+    app.use("/api/shift", shiftrouter.getRouter());                        //turnos
 };
 
 

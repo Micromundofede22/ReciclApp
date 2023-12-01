@@ -17,6 +17,6 @@ const shiftsSchema= new mongoose.Schema({
 
 mongoose.set("strictQuery", false);
 
-const shiftsModel= new mongoose.model("shifts", shiftsSchema);
+const shiftsModel= new mongoose.model("shifts-not-confirmed", shiftsSchema);
 
 export default shiftsModel;

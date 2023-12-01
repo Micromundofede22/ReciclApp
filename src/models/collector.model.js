@@ -14,7 +14,8 @@ const collectorSchema = new mongoose.Schema({
   },
   password: { type: String, required: true },
   verifiedAccount: { type: String, default: "UNVERIFIED" },
-  shiftsWallet: { type: mongoose.Schema.Types.ObjectId, ref: "shifts-wallet" }, //billetera de puntos
+  shiftsWallet: { type: mongoose.Schema.Types.ObjectId, ref: "shifts-wallet" }, //billetera de turnos
+  pointsWallet: {type: mongoose.Schema.Types.ObjectId , ref: "pointsWallet"},   //billetera puntos  
   identityDocuments: {
     type: [
       {

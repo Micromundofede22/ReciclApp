@@ -37,10 +37,10 @@ export const createWallet = async (req, res) => {
   }
 };
 
-export const updateWallet = async (req, res) => {
+export const updateWallet = async (req, res) => { //puntos que 
   try {
     const wid = req.params.wid;
-    const data = req.body.notEnabledPoints;
+    const data = req.body.notEnabledPoints; 
     // console.log(data);
     const wallet = await PointsWalletService.getById(wid);
     if (!wallet) return res.sendRequestError("Id incorrecto");

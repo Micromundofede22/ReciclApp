@@ -29,16 +29,14 @@ const initializePassport = () => {
 
         try {
           const user = await UserService.getEmail({ email: username });
-
           const newPointsWallet = await PointsWalletService.create({});
-
-          // console.log(newPointsWallet);
 
           if (user) {
             console.log("usuario ya existe");
             return done(null, false);
           }
 
+          //registro de recolectores
           if (role == "collector") {
             const shiftsWallet = await ShiftsWalletService.create({});
 
@@ -52,6 +50,7 @@ const initializePassport = () => {
               role,
               verifiedAccount: "UNVERIFIED",
               shiftsWallet: shiftsWallet._id,
+              pointsWallet: newPointsWallet._id,
               identityDocuments: [],
               service: "local",
               imageProfile: "collector.jpg",
@@ -61,6 +60,7 @@ const initializePassport = () => {
             return done(null, result);
           }
 
+          //registro de usuarios
           const newUser = {
             first_name,
             last_name,
@@ -90,15 +90,23 @@ const initializePassport = () => {
       },
       async (username, password, done) => {
         try {
-          const user = await UserService.getEmail({ email: username });
+          const user = await UserService.getEmail({ email: username }); //configurar login para recolectores
+          const collector= await CollectorService.getOne({email: username});
 
-          if (!user) return done(null, false);
+          if (!user && !collector) return done(null, false);
 
-          if (!isValidpassword(password, user)) return done(null, false);
+          if (!isValidpassword(password, user) && !isValidpassword(password, collector)) return done(null, false);
 
-          const token = generateToken(user);
-          user.token = token;
-          done(null, user);
+          if(user){
+              const token = generateToken(user);
+              user.token = token;
+              done(null, user);
+          }
+          if(collector){
+            const token = generateToken(collector);
+              collector.token = token;
+              done(null, collector);
+          }
         } catch (error) {}
       }
     )

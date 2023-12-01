@@ -3,14 +3,14 @@ import {getByIdPointsWallet,getWallets,createWallet,updateWallet, deleteWallet} 
 
 export default class PointsWalletRouter extends AppRouter{
     init(){
-        this.get("/", getWallets);
+        this.get("/", getWallets); //solo admin
         
-        this.get("/:wid", getByIdPointsWallet);
+        this.get("/:wid", getByIdPointsWallet); //solo user y premium (adminCollector accede y habilita)
 
-        this.post("/", createWallet);
+        this.post("/", createWallet); //admin
 
-        this.put("/:wid", updateWallet);
+        this.put("/:wid", updateWallet); //solo user o premium
 
-        this.delete("/:wid", deleteWallet);
+        this.delete("/:wid", deleteWallet); //solo admin
     }
 }
