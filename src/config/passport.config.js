@@ -74,7 +74,7 @@ const initializePassport = () => {
             service: "local",
             imageProfile: "usuario.jpg",
           };
-          console.log(newUser);
+          // console.log(newUser);
           const result = await UserService.create(newUser);
           return done(null, result);
         } catch (error) {}

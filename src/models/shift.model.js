@@ -8,7 +8,7 @@ const shiftsSchema= new mongoose.Schema({
     hour: {type: String, required: true},              //hora
     street: {type: String, required: true},            //calle
     height: {type: Number, required:true},             //altura-número
-    user:{type: String, required: true},               //usuario
+    emailUser:{type: String, required: true},          //email usuario
     recyclingNumber: {type: Number, required: true},   //número de reciclaje del usuario
     points: {type:Number, required:true},              //puntos acumulados por habilitar
     activatedPoints: {type:Boolean, default: false}    //puntos habilitados true or false

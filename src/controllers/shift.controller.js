@@ -3,6 +3,7 @@ import {
   PointsWalletService,
   ShiftsService,
   ShiftsWalletService,
+  UserService,
 } from "../service/service.js";
 
 export const getShifts = async (req, res) => {
@@ -29,10 +30,13 @@ export const getByIdShift = async (req, res) => {
 
 export const createShift = async (req, res) => {
   try {
+    //obtener email y datos del usuario desde el token, no todo por body como esta ahora
     const data = req.body;
     const result = await ShiftsService.create(data);
     if (!result)
       return res.sendRequestError("Petición incorrecta, turno no agendado");
+
+    //cuando creo el turno, los puntos se guardan en notenabledPoints dentro de su billetera
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -41,6 +45,7 @@ export const createShift = async (req, res) => {
 
 export const updateShiftConfirmed = async (req, res) => {
   //solo recolectores
+
   try {
     const sid = req.params.sid;
     const collector = req.body.collector;
@@ -50,10 +55,11 @@ export const updateShiftConfirmed = async (req, res) => {
     const shiftsWallet = await ShiftsWalletService.getById(
       "656916dae5ed20dafdb5e721"
     ); //para meter turno confirmado
-    //número total de viajes recolectores del recolector
-    const numberRecollection = shiftsWallet.shifts.length + 1;
 
     if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
+
+    //número total de viajes reciclados del recolector
+    const numberRecollection = shiftsWallet.shifts.length + 1;
 
     const shiftConfirmed = {
       _id: shiftNotConfirmed._id.toString(), //solo guardo _id string
@@ -64,7 +70,7 @@ export const updateShiftConfirmed = async (req, res) => {
       hour: shiftNotConfirmed.hour,
       street: shiftNotConfirmed.street,
       height: shiftNotConfirmed.height,
-      user: shiftNotConfirmed.user,
+      emailUser: shiftNotConfirmed.emailUser,
       recyclingNumber: 20,
       points: shiftNotConfirmed.points,
       activatedPoints: shiftNotConfirmed.activatedPoints,
@@ -76,7 +82,19 @@ export const updateShiftConfirmed = async (req, res) => {
       { _id: "656916dae5ed20dafdb5e721" },
       shiftsWallet
     );
-    await ShiftsService.delete(sid); //elimino el turno de la base de datos de turnos no confirmados
+
+    //al confirmar el turno, los puntos del reciclado se colocan en la pointsWallet del user, en notEnabledPoints
+    //y luego en finalized se le habilitarán  a la propiedad enabledpoints
+    const user = await UserService.getEmail({
+      email: shiftNotConfirmed.emailUser,
+    });
+    const pointsWalletID = user.pointsWallet.toString();
+    await PointsWalletService.update(pointsWalletID, {
+      notEnabledPoints: shiftNotConfirmed.points,
+    });
+
+    //elimino el turno de la base de datos de turnos no confirmados
+    await ShiftsService.delete(sid);
 
     res.sendSuccess(result);
   } catch (error) {
@@ -116,42 +134,60 @@ export const finalizedProcess = async (req, res) => {
   try {
     const cid = req.params.cid; //(cid= Collector ID)
     const collector = await CollectorService.getById(cid);
-    const pointsWalletID = collector.pointsWallet.toString();
+    const pointsWalletCollectorID = collector.pointsWallet.toString();
     const shiftswalletID = collector.shiftsWallet.toString();
     // console.log(collector, pointWalletID,shiftswalletID)
 
     let pointsWalletCollector = await PointsWalletService.getById(
-      pointsWalletID
+      pointsWalletCollectorID
     );
     const shiftsWallet = await ShiftsWalletService.getById(shiftswalletID);
     // console.log(shiftsWallet.shifts);
 
     let points = 0;
 
-    shiftsWallet.shifts.map((item) => {
+    shiftsWallet.shifts.map(async (item) => {
       if (
-        item.shiftConfirmed.done === true &&           //solo suma puntos cuando activatedPoints esta en false
+        item.shiftConfirmed.done === true && //solo suma puntos cuando activatedPoints esta en false
         item.shiftConfirmed.activatedPoints === false
       ) {
         item.shiftConfirmed.activatedPoints = "true"; //activan los puntos y queda inutilizado
         points = points + item.shiftConfirmed.points;
+
+        //actualizo la billetera de puntos del usuario, habilitándole los puntos no habilitados
+        const user = await UserService.getEmail({
+          email: item.shiftConfirmed.emailUser,
+        });
+        const pointsWalletUserID = user.pointsWallet.toString();
+        const pointsWalletUser = await PointsWalletService.getById(
+          pointsWalletUserID
+        );
+
+        await PointsWalletService.update(
+          { _id: pointsWalletUserID },
+          {
+            enabledPoints:
+              pointsWalletUser.enabledPoints +
+              pointsWalletUser.notEnabledPoints,
+            notEnabledPoints: 0,
+          }
+        );
       }
     });
 
+    //cuando no hay turnos por finalizar
     if (points === 0)
-      return res
-        .status(206)
-        .json({
-          message:
-            "Todos sus puntos ya fueron habilitados, confirme nuevos turnos para seguir ganando puntos",
-        });
+      return res.status(206).json({
+        message:
+          "Todos sus puntos ya fueron habilitados, confirme nuevos turnos para seguir ganando puntos",
+      });
 
     //actualizo billetera de turnos de collector
     await ShiftsWalletService.update({ _id: shiftswalletID }, shiftsWallet);
 
     //actualizo la billetera de puntos del collector OK
     await PointsWalletService.update(
-      { _id: pointsWalletID },
+      { _id: pointsWalletCollectorID },
       { enabledPoints: pointsWalletCollector.enabledPoints + points }
     );
 

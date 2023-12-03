@@ -14,13 +14,16 @@ export const isValidpassword= (user, password) => {
     return bcrypt.compareSync(password, user.password);
 };
 
-//genero token 
+//genero token (llamado userToken)
 export const generateToken= (userToken) => {
-    const token= jwt.sign({userToken}, JWT_PRIVATE_KEY, {expiresIn:"24h"});
+    const token= jwt.sign({token}, JWT_PRIVATE_KEY, {expiresIn:"24h"});
     return token;
 };
 
+//directorio actual
 export const __filename= fileURLToPath(import.meta.url);
 export const __dirname= dirname(__filename);
+
+
 
 
