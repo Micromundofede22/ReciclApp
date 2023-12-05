@@ -7,4 +7,5 @@ export default class CollectorRepositorie{
     create= async(data) => await this.dao.create(data);
     getOne= async(data) => await this.dao.getOne(data);
     getById= async(id) => await this.dao.getById(id);
+    update= async(id,data) => await this.dao.update(id,data);
 }

@@ -40,7 +40,7 @@ const initializePassport = () => {
         try {
           //registro de recolectores
           if (role == "collector") {
-            console.log("por aca")
+            // console.log("por aca")
             const collector = await CollectorService.getOne({
               email: username,
             });

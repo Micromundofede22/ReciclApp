@@ -15,12 +15,12 @@ export default class ShiftRouter extends AppRouter {
 
     this.get("/:sid", getByIdShift); //solo el user, y collector
 
-    this.post("/", handlePolicies(["USER"]), createShift); //solo user y premium
+    this.post("/", handlePolicies(["USER", "PREMIUM"]), createShift); //solo user y premium
 
     this.put("/:sid/confirmed",handlePolicies(["COLLECTOR"]), updateShiftConfirmed); //solo recolector. Confirma turno y lo mete en su shiftswallet
 
-    this.put("/:scid/done", updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
+    this.put("/:scid/done",handlePolicies(["COLLECTOR"]), updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
 
-    this.put("/:cid/finalized", finalizedProcess) //(cid= collector ID)solo el admincollector puede acceder aca 
+    this.put("/:cid/finalized",handlePolicies(["ADMINCOLLECTOR"]), finalizedProcess) //(cid= collector ID)solo el admincollector puede acceder aca 
   }
 }

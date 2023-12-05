@@ -4,4 +4,5 @@ export default class UserMongoDAO{
     create= async(data) => await UserModel.create(data);
     getEmail= async (data) => await UserModel.findOne(data).lean();
     getById= async(id) => await UserModel.findById(id);
+    update= async(id,data) => await UserModel.findByIdAndUpdate(id,data);
 };

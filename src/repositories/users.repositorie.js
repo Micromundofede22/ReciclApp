@@ -5,4 +5,5 @@ export default class UsersRepositorie{
     create= async(data) => await this.dao.create(data); 
     getEmail= async(data) => await this.dao.getEmail(data);
     getById= async(id) => await this.dao.getById(id);
+    update= async(id,data) => await this.dao.update(id,data);
 };
