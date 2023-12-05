@@ -30,9 +30,18 @@ export const getByIdShift = async (req, res) => {
 
 export const createShift = async (req, res) => {
   try {
-    //obtener email y datos del usuario desde el token, no todo por body como esta ahora
+    const user = req.user.tokenInfo;
     const data = req.body;
-    const result = await ShiftsService.create(data);
+
+    const result = await ShiftsService.create({
+      date: data.date,
+      hour: data.hour,
+      street: user.street,
+      height: user.height,
+      emailUser: user.email,
+      recyclingNumber: user.recyclingNumber,
+      points: data.points,
+    });
     if (!result)
       return res.sendRequestError("Petición incorrecta, turno no agendado");
 
@@ -48,13 +57,15 @@ export const updateShiftConfirmed = async (req, res) => {
 
   try {
     const sid = req.params.sid;
-    const collector = req.body.collector;
-    // const collector= req.user.userToken.firstname   hacer handlepolice y tomar sus datos del token
+    // const collector = req.body.collector;
+    const collector= req.user.tokenInfo;
+    const sw_id= req.user.tokenInfo.shiftsWallet.toString();   
 
     const shiftNotConfirmed = await ShiftsService.getById(sid); //turno del usuario
-    const shiftsWallet = await ShiftsWalletService.getById(
-      "656916dae5ed20dafdb5e721"
-    ); //para meter turno confirmado
+    const shiftsWallet= await ShiftsWalletService.getById(sw_id);
+    // const shiftsWallet = await ShiftsWalletService.getById(
+    //   "656916dae5ed20dafdb5e721"
+    // ); //para meter turno confirmado
 
     if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
 
@@ -64,7 +75,7 @@ export const updateShiftConfirmed = async (req, res) => {
     const shiftConfirmed = {
       _id: shiftNotConfirmed._id.toString(), //solo guardo _id string
       state: "confirmed",
-      collector: collector,
+      collector: `${collector.first_name} ${collector.last_name}`,
       recollectionNumberCollector: numberRecollection,
       date: shiftNotConfirmed.date,
       hour: shiftNotConfirmed.hour,
@@ -79,7 +90,7 @@ export const updateShiftConfirmed = async (req, res) => {
     shiftsWallet.shifts.push({ shiftConfirmed: shiftConfirmed });
 
     const result = await ShiftsWalletService.update(
-      { _id: "656916dae5ed20dafdb5e721" },
+      { _id: sw_id },
       shiftsWallet
     );
 

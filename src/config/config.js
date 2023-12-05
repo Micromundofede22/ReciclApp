@@ -10,7 +10,7 @@ export const MONDO_DB_NAME= process.env.MONDO_DB_NAME;
 
 export const JWT_PRIVATE_KEY= process.env.JWT_PRIVATE_KEY;
 
-export const SIGNED_COOKIE_NAME= process.env.SIGNED_COOKIE_KEY;
+export const SIGNED_COOKIE_NAME= process.env.SIGNED_COOKIE_NAME;
 
 export const SIGNED_COOKIE_SECRET= process.env.SIGNED_COOKIE_SECRET;
 

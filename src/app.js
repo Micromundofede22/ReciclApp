@@ -24,7 +24,7 @@ app.use(cookieParser(SIGNED_COOKIE_SECRET));
 
 //PASSPORT
 app.use(session({
-    secret: "secretSessionPassport",
+    secret: SIGNED_COOKIE_SECRET,
     resave: true,
     saveUninitialized: true
 }));

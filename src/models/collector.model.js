@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 const collectorSchema = new mongoose.Schema({
   first_name: { type: String, required: true },
   last_name: { type: String, required: true },
-  addres: { type: String, required: true },
+  street: { type: String, required: true },
+  height: {type: Number, required:true},
   email: { type: String, required: true },
   age: { type: Number, required: true },
   role: {
     type: String,
     required: true,
-    default: "collector",
     enum: ["collector", "admincollector"],
   },
   password: { type: String, required: true },

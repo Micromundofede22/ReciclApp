@@ -2,6 +2,7 @@ import SessionRouter from "./routers/session.router.js";
 import RecycledProductsRouter from "./routers/recycledProducts.router.js";
 import PointsWalletRouter from "./routers/pointsWallet.router.js";
 import ShiftRouter from "./routers/shift.router.js";
+import {passportCall} from "./middleware/passportCall.js"
 
 const run = (app) => {
 
@@ -15,7 +16,7 @@ const run = (app) => {
     app.use("/api/session", sessionRouter.getRouter());                    //sesiones
     app.use("/api/recycled-products", recycledproductsrouter.getRouter()); //productos a reciclar
     app.use("/api/points-wallet", pointswalletrouter.getRouter());         //biletera puntos
-    app.use("/api/shift", shiftrouter.getRouter());                        //turnos
+    app.use("/api/shift", passportCall("jwt"),shiftrouter.getRouter());    //turnos
 };
 
 

@@ -13,8 +13,8 @@ export const failRegister = (req, res) => {
 //LOGIN
 export const login = (req, res) => {
     res
-        .cookie(SIGNED_COOKIE_NAME, req.user.token, { signed: true }) //secreto de la firma está en la app.use
-        .redirect("/recycled-products");
+        .cookie(SIGNED_COOKIE_NAME, req.user.token, { signed: false }) //secreto de la firma está en la app.use
+        .status(200).json({message: "logueado"})
 }
 
 export const failLogin = (req, res) => {
