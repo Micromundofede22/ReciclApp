@@ -11,9 +11,9 @@ import { handlePolicies } from "../middleware/authentication.js";
 
 export default class ShiftRouter extends AppRouter {
   init() {
-    this.get("/", getShifts);
+    this.get("/",handlePolicies(["COLLECTOR"]), getShifts); //trae turnos sin confirmar
 
-    this.get("/:sid", getByIdShift); //solo el user, y collector
+    this.get("/:sid",handlePolicies(["COLLECTOR"]), getByIdShift); //solo el user, y collector
 
     this.post("/", handlePolicies(["USER", "PREMIUM"]), createShift); //solo user y premium
 
@@ -22,5 +22,8 @@ export default class ShiftRouter extends AppRouter {
     this.put("/:scid/done",handlePolicies(["COLLECTOR"]), updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
 
     this.put("/:cid/finalized",handlePolicies(["ADMINCOLLECTOR"]), finalizedProcess) //(cid= collector ID)solo el admincollector puede acceder aca 
+  
+    this.delete("/")
+
   }
 }

@@ -21,9 +21,11 @@ import {
   JWT_PRIVATE_KEY,
 } from "../config/config.js";
 
+
 const LocalStrategy = local.Strategy;
 const JWTStrategy = passport_jwt.Strategy;
 const ExtractJWT = passport_jwt.ExtractJwt; //extrae token de cookie
+
 
 const initializePassport = () => {
   passport.use(
@@ -81,6 +83,7 @@ const initializePassport = () => {
             return done(null, false);
           }
           const newPointsWallet = await PointsWalletService.create({});
+          const shiftsWallet = await ShiftsWalletService.create({});
           //registro de usuarios
           const newUser = {
             first_name,
@@ -92,6 +95,7 @@ const initializePassport = () => {
             password: createHash(password),
             role,
             verifiedAccount: "UNVERIFIED",
+            shiftsWallet: shiftsWallet._id,
             pointsWallet: newPointsWallet._id,
             service: "local",
             imageProfile: "usuario.jpg",

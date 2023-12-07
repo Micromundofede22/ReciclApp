@@ -5,11 +5,11 @@ export default class PointsWalletRouter extends AppRouter{
     init(){
         this.get("/", getWallets); //solo admin
         
-        this.get("/:wid", getByIdPointsWallet); //solo user y premium (adminCollector accede y habilita)
+        this.get("/:wid", getByIdPointsWallet); //solo user y premium
 
         this.post("/", createWallet); //admin
 
-        this.put("/:wid", updateWallet); //solo user o premium
+        this.put("/:wid", updateWallet); // solo admin
 
         this.delete("/:wid", deleteWallet); //solo admin
     }

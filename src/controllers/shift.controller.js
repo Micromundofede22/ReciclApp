@@ -32,6 +32,7 @@ export const createShift = async (req, res) => {
   try {
     const user = req.user.tokenInfo;
     const data = req.body;
+    //turno en collecion turnos no confirmados
 
     const result = await ShiftsService.create({
       date: data.date,
@@ -44,6 +45,14 @@ export const createShift = async (req, res) => {
     });
     if (!result)
       return res.sendRequestError("Petición incorrecta, turno no agendado");
+
+    //ingreso el turno en la billetera turnos del user
+    const shiftsWalletIDUser= user.shiftsWallet.toString();
+    const shiftsWalletUser= await ShiftsWalletService.getById(shiftsWalletIDUser);
+    const shift= {_id: result._id};
+    shiftsWalletUser.shiftsNotConfirmed.push({shift: shift});
+    await ShiftsWalletService.update({_id: shiftsWalletIDUser}, shiftsWalletUser);
+
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -54,16 +63,15 @@ export const updateShiftConfirmed = async (req, res) => {
   //solo recolectores
   try {
     const sid = req.params.sid;
-    // const collector = req.body.collector;
     const collector = req.user.tokenInfo;
-    const sw_id = req.user.tokenInfo.shiftsWallet.toString();
+    const sw_id = collector.shiftsWallet.toString();
 
     const shiftNotConfirmed = await ShiftsService.getById(sid); //turno del usuario
-    const shiftsWallet = await ShiftsWalletService.getById(sw_id);
+    const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
 
     if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
 
-    const shiftConfirmed = {
+    const shift = {
       _id: shiftNotConfirmed._id.toString(), //solo guardo _id string
       state: "confirmed",
       collector: `${collector.first_name} ${collector.last_name}`,
@@ -78,15 +86,23 @@ export const updateShiftConfirmed = async (req, res) => {
       points: shiftNotConfirmed.points,
       activatedPoints: shiftNotConfirmed.activatedPoints,
     };
-
-    shiftsWallet.shifts.push({ shiftConfirmed: shiftConfirmed });
-
+    //COLLECTOR. ingreso el turno en la wallet
+    shiftsWalletCollector.shiftsConfirmed.push({ shift: shift });
     const result = await ShiftsWalletService.update(
       { _id: sw_id },
-      shiftsWallet
+      shiftsWalletCollector
     );
 
-    //elimino el turno de la base de datos de turnos no confirmados
+    //USER.ingreso el turno en la wallet
+    const user= await UserService.getEmail({email:shiftNotConfirmed.emailUser});
+    const swUser_id= user.shiftsWallet.toString();
+    const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
+    shiftsWalletUser.shiftsConfirmed.push({shift: shift});
+    shiftsWalletUser.shiftsNotConfirmed.length = 0
+    await ShiftsWalletService.update({_id: swUser_id}, shiftsWalletUser);
+
+
+    //elimino el turno de la coleccion general de turnos no confirmados
     await ShiftsService.delete(sid);
 
     res.sendSuccess(result);
@@ -159,7 +175,6 @@ export const updateDoneShift = async (req, res) => {
     res.sendServerError(error.message);
   }
 };
-
 
 
 export const finalizedProcess = async (req, res) => {
