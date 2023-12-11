@@ -5,7 +5,10 @@ import {
   getByIdShift,
   updateShiftConfirmed,
   updateDoneShift,
-  finalizedProcess
+  finalizedProcess,
+  cancelShift,
+  cancelCollectorShift,
+  cancelAdminCollectorShift
 } from "../controllers/shift.controller.js";
 import { handlePolicies } from "../middleware/authentication.js";
 
@@ -21,9 +24,13 @@ export default class ShiftRouter extends AppRouter {
 
     this.put("/:scid/done",handlePolicies(["COLLECTOR"]), updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
 
-    this.put("/:cid/finalized",handlePolicies(["ADMINCOLLECTOR"]), finalizedProcess) //(cid= collector ID)solo el admincollector puede acceder aca 
+    this.put("/:cid/finalized",handlePolicies(["ADMINCOLLECTOR"]), finalizedProcess); //(cid= collector ID)solo el admincollector. HABILITA POINTS 
   
-    this.delete("/")
+    this.delete("/:sid/cancel",handlePolicies(["USER"]), cancelShift);
+
+    this.delete("/:scid/cancel-collector",handlePolicies(["COLLECTOR"]), cancelCollectorShift);
+
+    this.delete("/:cid/cancel/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),cancelAdminCollectorShift )
 
   }
 }

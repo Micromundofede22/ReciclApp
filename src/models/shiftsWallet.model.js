@@ -57,7 +57,6 @@ const shiftsWalletSchema = new mongoose.Schema({
           emailUser: { type: String, required: true }, 
           recyclingNumber: { type: Number, required: true }, //actualizarlo ya q en dondese suma 1
           points: { type: Number, required: true }, //actualizarlos si se modificó en done con kg
-          activatedPoints: { type: Boolean, default: true }, 
         },
       },
     ],
