@@ -383,50 +383,50 @@ export const cancelCollectorShift= async(req,res)=>{
 
 export const cancelAdminCollectorShift= async(req,res) =>{
   try {
-    const cid= req.params.cid //collector id
+    const cid= req.params.cid; //collector id
     const scid= req.params.scid;
 
     const collector= await CollectorService.getById(cid);
     const sw_id= collector.shiftsWallet.toString();
-    const pw_id= collector.pointsWallet.toString();
     const shiftsWalletCollector= await ShiftsWalletService.getById(sw_id);
    
     
     shiftsWalletCollector.shiftsConfirmed.forEach(async(item,index)=>{
       //si el turno está confirmado y también realizado (done= true), modificar sus pointsWallet
-      //cancelando los puntos que en done, se le sumaron en su pw en notenabled
+      //cancelando los puntos que en done, se le sumaron en su pw en notenabled (solo en user, collector no)
+      //ya que los puntos en collector
       if(item.shift._id.toString() === scid) {
         item.shift.state= "invalid"
         const user= await UserService.getEmail({email: item.shift.emailUser});
         const swUser_id= user.shiftsWallet.toString();
         const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
-        
-        //pw user
+
+        //si el turno a invalidar, ya se realizó, modificar pw también
         if(item.shift.done === true ){ //le resto los puntos que se le habían asignado
+          //pw user
           const pwUser_id= user.pointsWallet.toString();
           const pointsWalletUser= await PointsWalletService.getById(pwUser_id);
           pointsWalletUser.notEnabledPoints= pointsWalletUser.notEnabledPoints - item.shift.points;
           await PointsWalletService.update({_id:pwUser_id}, pointsWalletUser);
 
-        //pw collector
-        const pointswalletCollector= await PointsWalletService.getById(pw_id);
-        pointswalletCollector.notEnabledPoints= pointswalletCollector.notEnabledPoints - item.shift.points;
-        await PointsWalletService.update({_id:pw_id}, pointswalletCollector);
         };
+
+        //si turno aun no se realizó, modificar solo sw
         //sw user
-        shiftsWalletUser.shiftsCanceled.push({shift: item.shift})
+        shiftsWalletUser.shiftsCanceled.push({shift: item.shift});
         shiftsWalletUser.shiftsConfirmed.forEach(async(item,index)=>{
           if(item.shift._id.toString() === scid){
             shiftsWalletUser.shiftsConfirmed.splice(index,1);
-            await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser)
+            await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
           }
         })
 
-        //cancelo la sw y pw del collector
-        item.shift.state= "cancelled"
+        //sw collector
         shiftsWalletCollector.shiftsCanceled.push({shift: item.shift});
         shiftsWalletCollector.shiftsConfirmed.splice(index,1);
-        await ShiftsWalletService.update({_id:sw_id}, shiftsWalletCollector)
+        await ShiftsWalletService.update({_id:sw_id}, shiftsWalletCollector);
+
+        return res.sendSuccess("Turno inválido")
       }
     })
 
