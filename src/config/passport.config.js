@@ -28,6 +28,7 @@ const ExtractJWT = passport_jwt.ExtractJwt; //extrae token de cookie
 
 
 const initializePassport = () => {
+  //REGISTER LOCAL
   passport.use(
     "registerPassport",
     new LocalStrategy(
@@ -35,14 +36,13 @@ const initializePassport = () => {
         passReqToCallback: true,
         usernameField: "email",
       },
+      //si o si en este orden req, username,password,done
       async (req, username, password, done) => {
-        //si o si en este orden req, username,password,done
         const { first_name, last_name, street, height, email, age, role } = req.body;
 
         try {
           //registro de recolectores
           if (role == "collector") {
-            // console.log("por aca")
             const collector = await CollectorService.getOne({
               email: username,
             });
@@ -50,7 +50,8 @@ const initializePassport = () => {
             if (collector) {
               console.log("collector ya registrado");
               return done(null, false);
-            }
+            };
+
             const shiftsWallet = await ShiftsWalletService.create({});
             const newPointsWallet = await PointsWalletService.create({});
 
@@ -108,8 +109,7 @@ const initializePassport = () => {
     )
   );
 
-
-
+  //LOGIN LOCAL
   passport.use(
     "loginPassport",
     new LocalStrategy(
@@ -123,17 +123,16 @@ const initializePassport = () => {
           // console.log(user, password);
 
           if (!user && !collector) return done(null, false);
-          // if (!user) return done(null, false);
-          // if (!isValidpassword(user, password)) return done(null, false);
-
+          
           if(user){
+            if (!isValidpassword(user, password)) return done(null, false);
             const token = generateToken(user);
             user.token = token;
             done(null, user);
           }
 
           if (collector) {
-            // if (!isValidpassword(password, collector)) return done(null, false);
+            if (!isValidpassword(collector,password )) return done(null, false);
             const token = generateToken(collector);
             collector.token = token;
             done(null, collector);
@@ -143,6 +142,7 @@ const initializePassport = () => {
     )
   );
 
+  //GOOGLE
   passport.use(
     "googlePassport",
     new GoogleStrategy(
@@ -167,6 +167,8 @@ const initializePassport = () => {
             // si no existe usuario, lo registra
           } else {
             const newPointsWallet = await PointsWalletService.create({});
+            const newshiftsWallet= await ShiftsWalletService.create({});
+
             const newUser = await UserService.create({
               first_name: profile._json.name,
               last_name: profile._json.family_name,
@@ -177,6 +179,7 @@ const initializePassport = () => {
               role: "user",
               verifiedAccount: "UNVERIFIED",
               pointsWallet: newPointsWallet._id,
+              shiftsWallet: newshiftsWallet._id,
               servicio: "Google",
               imageProfile: profile._json.picture,
             });

@@ -30,5 +30,5 @@ export const getGoogle= (req,res) => { }
 export const googleCallback = (req,res) => {
     res
         .cookie(SIGNED_COOKIE_NAME, req.user.token, { signed: true }) //secreto de la firma está en la app.use
-        .redirect("/recycled-products");
+        .sendSuccess("Logueado google");
 };

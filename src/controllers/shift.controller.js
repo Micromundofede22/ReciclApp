@@ -409,6 +409,12 @@ export const cancelAdminCollectorShift= async(req,res) =>{
           pointsWalletUser.notEnabledPoints= pointsWalletUser.notEnabledPoints - item.shift.points;
           await PointsWalletService.update({_id:pwUser_id}, pointsWalletUser);
 
+          //modifico los recyclingNumber(user) y collectionNumber(collector) restandole 1
+          user.recyclingNumber= user.recyclingNumber - 1;
+          await UserService.update({_id: user._id.toString()}, user);
+
+          collector.collectionNumber= collector.collectionNumber - 1;
+          await CollectorService.update({_id: collector._id.toString()}, collector);
         };
 
         //si turno aun no se realizó, modificar solo sw
