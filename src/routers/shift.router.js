@@ -4,6 +4,9 @@ import {
   createShift,
   getByIdShift,
   updateShiftConfirmed,
+  updateShiftAbsent,
+  updateShiftReconfirm,
+  updateShiftReconfirmCollector,
   updateDoneShift,
   finalizedProcess,
   cancelShift,
@@ -21,6 +24,12 @@ export default class ShiftRouter extends AppRouter {
     this.post("/", handlePolicies(["USER", "PREMIUM"]), createShift); //solo user y premium
 
     this.put("/:sid/confirmed",handlePolicies(["COLLECTOR"]), updateShiftConfirmed); //solo recolector. Confirma turno y lo mete en su shiftswallet
+
+    this.put("/:scid/absent",handlePolicies(["COLLECTOR"]), updateShiftAbsent); //user ausente del domicilio
+
+    this.put("/:said/reconfirm-user",handlePolicies(["USER"]), updateShiftReconfirm); //said= shift absent id
+
+    this.put("/:srcid/reconfirm-collector",handlePolicies(["COLLECTOR"]), updateShiftReconfirmCollector) //srcid= shift reconfirmed id
 
     this.put("/:scid/done",handlePolicies(["COLLECTOR"]), updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
 

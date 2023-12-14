@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     role: {type: String, required: true, default: "user", enum: ["user", "premium", "collector","admincollector","admin"]},
     password: {type: String, required: true},
     verifiedAccount: {type: String, default: "UNVERIFIED"},
+    status: {type: String, default: "inactive"},
     shiftsWallet: { type: mongoose.Schema.Types.ObjectId, ref: "shifts-wallet"},
     pointsWallet: {type: mongoose.Schema.Types.ObjectId , ref: "pointsWallet"}, //billetera de puntos
     recyclingNumber:{type: Number, required: true, default: 1},

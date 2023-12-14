@@ -105,9 +105,9 @@ export const updateShiftConfirmed = async (req, res) => {
     const swUser_id = user.shiftsWallet.toString();
     const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
     shiftsWalletUser.shiftsConfirmed.push({ shift: shift });
-    shiftsWalletUser.shiftsNotConfirmed.forEach((item,index)=>{
-      if(item.shift._id.toString() == sid){
-        shiftsWalletUser.shiftsNotConfirmed.splice(index,1)
+    shiftsWalletUser.shiftsNotConfirmed.forEach((item, index) => {
+      if (item.shift._id.toString() == sid) {
+        shiftsWalletUser.shiftsNotConfirmed.splice(index, 1);
       }
     });
     await ShiftsWalletService.update({ _id: swUser_id }, shiftsWalletUser);
@@ -116,6 +116,175 @@ export const updateShiftConfirmed = async (req, res) => {
     await ShiftsService.delete(sid);
 
     res.sendSuccess(result);
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const updateShiftAbsent = async (req, res) => {
+  try {
+    const scid = req.params.scid;
+    const collector = req.user.tokenInfo;
+    const sw_idCollector = collector.shiftsWallet.toString();
+    const shiftsWalletCollector = await ShiftsWalletService.getById(
+      sw_idCollector
+    );
+
+    //sw collector
+    await shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
+      if (item.shift._id.toString() === scid) {
+        //sw user (shift pasa a array de absents)
+        const emailUser = item.shift.emailUser;
+        const user = await UserService.getEmail({ email: emailUser });
+        if (!user) return res.sendRequestError("Petición incorrecta");
+        const sw_idUser = user.shiftsWallet.toString();
+        const shiftsWalletUser = await ShiftsWalletService.getById(sw_idUser);
+
+        shiftsWalletUser.shiftsConfirmed.forEach(async (item, index) => {
+          if (item.shift._id.toString() === scid) {
+            item.shift.state = "absent";
+            shiftsWalletUser.shiftsAbsents.push({ shift: item.shift });
+            shiftsWalletUser.shiftsConfirmed.splice(index, 1);
+          }
+        });
+
+        await ShiftsWalletService.update({ _id: sw_idUser }, shiftsWalletUser);
+
+        //sw collector
+        item.shift.state = "absent";
+        shiftsWalletCollector.shiftsAbsents.push({ shift: item.shift });
+        shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
+
+        await ShiftsWalletService.update(
+          { _id: sw_idCollector },
+          shiftsWalletCollector
+        );
+      }
+    });
+
+    res.sendSuccess(
+      "Hemos avisado al USER que usted pasó por el domicilio, pero el estaba ausente."
+    );
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const updateShiftReconfirm = async (req, res) => {
+  try {
+    const said = req.params.said;
+    const data = req.body;
+    const user = req.user.tokenInfo;
+    const swUser_ID = user.shiftsWallet.toString();
+    const shiftsWalletUser = await ShiftsWalletService.getById(swUser_ID);
+
+    shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
+      if (item.shift._id.toString() === said) {
+        //data collector
+        const emailCollector = item.shift.emailCollector;
+        const collector = await CollectorService.getOne({
+          email: emailCollector,
+        });
+        const sw_idCollector = collector.shiftsWallet.toString();
+        const shiftsWalletCollector = await ShiftsWalletService.getById(
+          sw_idCollector
+        );
+
+        shiftsWalletCollector.shiftsAbsents.forEach(async (item, index) => {
+          if (item.shift._id.toString() === said) {
+            item.shift.state = "reconfirm-pending";
+            item.shift.date = data.date;
+            item.shift.hour = data.hour;
+          }
+        });
+        await ShiftsWalletService.update(
+          { _id: sw_idCollector },
+          shiftsWalletCollector
+        );
+
+        item.shift.state = "reconfirm-pending";
+        item.shift.date = data.date;
+        item.shift.hour = data.hour;
+
+        await ShiftsWalletService.update({ _id: swUser_ID }, shiftsWalletUser);
+      }
+    });
+    res.sendSuccess("Hemos informado al collector asignado sobre su reconfirmación de turno. Espere la reconfirmación de su parte.")
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const updateShiftReconfirmCollector = async (req, res) => {
+  try {
+    const collector = req.user.tokenInfo;
+    const srcid = req.params.srcid;
+    const data = req.body.accept; //accept= true or false
+    const sw_idCollector = collector.shiftsWallet.toString();
+    const shiftsWalletCollector = await ShiftsWalletService.getById(
+      sw_idCollector
+    );
+
+    await shiftsWalletCollector.shiftsAbsents.forEach(async (item, index) => {
+      if (item.shift._id.toString() === srcid) {
+        //data user
+        const emailUser = item.shift.emailUser;
+        const user = await UserService.getEmail({ email: emailUser });
+        const swUser_ID = user.shiftsWallet.toString();
+        const shiftsWalletUser = await ShiftsWalletService.getById(swUser_ID);
+
+        //si collector confirma el turno reconfirmado
+        if (data === true) {
+          //sw user
+          shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
+            if (item.shift._id.toString() === srcid) {
+                item.shift.state = "reconfirmed";
+                shiftsWalletUser.shiftsConfirmed.push({ shift: item.shift });
+                shiftsWalletUser.shiftsAbsents.splice(index, 1);
+                await ShiftsWalletService.update(
+                  { _id: swUser_ID },
+                  shiftsWalletUser
+                );
+            }
+          });
+          //sw collector
+          item.shift.state = "reconfirmed";
+          shiftsWalletCollector.shiftsConfirmed.push({ shift: item.shift });
+          shiftsWalletCollector.shiftsAbsents.splice(index, 1);
+          await ShiftsWalletService.update(
+            { _id: sw_idCollector },
+            shiftsWalletCollector
+          );
+          return res.sendSuccess("Turno reconfirmado ok");
+        }
+
+        //si collector rechaza el pedido de reconfirmación del turno
+        if (data === false) {
+          //sw user
+          shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
+            if (item.shift._id.toString() === srcid) {
+                item.shift.state = "reconfirm-cancelled";
+                shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
+                shiftsWalletUser.shiftsAbsents.splice(index, 1);
+                await ShiftsWalletService.update(
+                  { _id: swUser_ID },
+                  shiftsWalletUser
+                );
+            }
+          });
+
+          //sw collector
+          item.shift.state = "reconfirm-cancelled";
+          shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+          shiftsWalletCollector.shiftsAbsents.splice(index, 1);
+          await ShiftsWalletService.update(
+            { _id: sw_idCollector },
+            shiftsWalletCollector
+          );
+          return res.sendSuccess("Turno reconfirmado cancelado");
+        }
+      }
+    });
   } catch (error) {
     res.sendServerError(error.message);
   }
@@ -320,13 +489,13 @@ export const cancelShift = async (req, res) => {
         });
         const sw_id = collector.shiftsWallet.toString();
         const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
-        item.shift.state= "cancelled"
+        item.shift.state = "cancelled";
         shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
-        shiftsWalletCollector.shiftsConfirmed.forEach((item,index)=>{
-          if(item.shift._id.toString() == shiftCancelID){
-            shiftsWalletCollector.shiftsConfirmed.splice(index,1);
+        shiftsWalletCollector.shiftsConfirmed.forEach((item, index) => {
+          if (item.shift._id.toString() == shiftCancelID) {
+            shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
           }
-        })
+        });
         await ShiftsWalletService.update({ _id: sw_id }, shiftsWalletCollector);
 
         //edición shiftswallet del user
@@ -337,106 +506,121 @@ export const cancelShift = async (req, res) => {
         return res.sendSuccess(
           "Turno cancelado, ya hemos avisado a su recolector asignado"
         );
-      } 
+      }
     });
-
   } catch (error) {
     res.sendServerError(error.message);
   }
 };
 
-export const cancelCollectorShift= async(req,res)=>{
+export const cancelCollectorShift = async (req, res) => {
   try {
-    const scid= req.params.scid;
-    const collector= req.user.tokenInfo;
-    const sw_id= collector.shiftsWallet.toString();
-    const shiftsWalletCollector= await ShiftsWalletService.getById(sw_id);
-    if(!shiftsWalletCollector) return res.sendRequestError("Petición incorrecta");
+    const scid = req.params.scid;
+    const collector = req.user.tokenInfo;
+    const sw_id = collector.shiftsWallet.toString();
+    const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
+    if (!shiftsWalletCollector)
+      return res.sendRequestError("Petición incorrecta");
 
-    shiftsWalletCollector.shiftsConfirmed.forEach(async(item,index)=>{
-      if(item.shift._id.toString() === scid){
-        item.shift.state= "cancelled";
+    shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
+      if (item.shift._id.toString() === scid) {
+        item.shift.state = "cancelled";
         //cancelo el turno en el user
-        const user= await UserService.getEmail({email: item.shift.emailUser});
-        const swUser_id= user.shiftsWallet.toString();
-        const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
-        shiftsWalletUser.shiftsConfirmed.forEach(async(item,index)=>{
-          if(item.shift._id.toString() === scid){
-            item.shift.state= "cancelled";
-            shiftsWalletUser.shiftsCanceled.push({shift: item.shift})
-            shiftsWalletUser.shiftsConfirmed.splice(index,1);
-            await ShiftsWalletService.update({_id: swUser_id}, shiftsWalletUser);
+        const user = await UserService.getEmail({
+          email: item.shift.emailUser,
+        });
+        const swUser_id = user.shiftsWallet.toString();
+        const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
+        shiftsWalletUser.shiftsConfirmed.forEach(async (item, index) => {
+          if (item.shift._id.toString() === scid) {
+            item.shift.state = "cancelled";
+            shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
+            shiftsWalletUser.shiftsConfirmed.splice(index, 1);
+            await ShiftsWalletService.update(
+              { _id: swUser_id },
+              shiftsWalletUser
+            );
           }
-        })
-      //cancelo el turno aca en la wallet del collector
-      shiftsWalletCollector.shiftsCanceled.push({shift: item.shift});
-      shiftsWalletCollector.shiftsConfirmed.splice(index,1);
-      await ShiftsWalletService.update({_id:sw_id}, shiftsWalletCollector)
-      return res.sendSuccess("Turno cancelado, ya hemos avisado al usuario")
+        });
+        //cancelo el turno aca en la wallet del collector
+        shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+        shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
+        await ShiftsWalletService.update({ _id: sw_id }, shiftsWalletCollector);
+        return res.sendSuccess("Turno cancelado, ya hemos avisado al usuario");
       }
-    })
-
+    });
   } catch (error) {
     res.sendServerError(error.message);
-  };
+  }
 };
 
-export const cancelAdminCollectorShift= async(req,res) =>{
+export const cancelAdminCollectorShift = async (req, res) => {
   try {
-    const cid= req.params.cid; //collector id
-    const scid= req.params.scid;
+    const cid = req.params.cid; //collector id
+    const scid = req.params.scid;
 
-    const collector= await CollectorService.getById(cid);
-    const sw_id= collector.shiftsWallet.toString();
-    const shiftsWalletCollector= await ShiftsWalletService.getById(sw_id);
-   
-    
-    shiftsWalletCollector.shiftsConfirmed.forEach(async(item,index)=>{
+    const collector = await CollectorService.getById(cid);
+    const sw_id = collector.shiftsWallet.toString();
+    const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
+
+    shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       //si el turno está confirmado y también realizado (done= true), modificar sus pointsWallet
       //cancelando los puntos que en done, se le sumaron en su pw en notenabled (solo en user, collector no)
       //ya que los puntos en collector
-      if(item.shift._id.toString() === scid) {
-        item.shift.state= "invalid"
-        const user= await UserService.getEmail({email: item.shift.emailUser});
-        const swUser_id= user.shiftsWallet.toString();
-        const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
+      if (item.shift._id.toString() === scid) {
+        item.shift.state = "invalid";
+        const user = await UserService.getEmail({
+          email: item.shift.emailUser,
+        });
+        const swUser_id = user.shiftsWallet.toString();
+        const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
 
         //si el turno a invalidar, ya se realizó, modificar pw también
-        if(item.shift.done === true ){ //le resto los puntos que se le habían asignado
+        if (item.shift.done === true) {
+          //le resto los puntos que se le habían asignado
           //pw user
-          const pwUser_id= user.pointsWallet.toString();
-          const pointsWalletUser= await PointsWalletService.getById(pwUser_id);
-          pointsWalletUser.notEnabledPoints= pointsWalletUser.notEnabledPoints - item.shift.points;
-          await PointsWalletService.update({_id:pwUser_id}, pointsWalletUser);
+          const pwUser_id = user.pointsWallet.toString();
+          const pointsWalletUser = await PointsWalletService.getById(pwUser_id);
+          pointsWalletUser.notEnabledPoints =
+            pointsWalletUser.notEnabledPoints - item.shift.points;
+          await PointsWalletService.update(
+            { _id: pwUser_id },
+            pointsWalletUser
+          );
 
           //modifico los recyclingNumber(user) y collectionNumber(collector) restandole 1
-          user.recyclingNumber= user.recyclingNumber - 1;
-          await UserService.update({_id: user._id.toString()}, user);
+          user.recyclingNumber = user.recyclingNumber - 1;
+          await UserService.update({ _id: user._id.toString() }, user);
 
-          collector.collectionNumber= collector.collectionNumber - 1;
-          await CollectorService.update({_id: collector._id.toString()}, collector);
-        };
+          collector.collectionNumber = collector.collectionNumber - 1;
+          await CollectorService.update(
+            { _id: collector._id.toString() },
+            collector
+          );
+        }
 
         //si turno aun no se realizó, modificar solo sw
         //sw user
-        shiftsWalletUser.shiftsCanceled.push({shift: item.shift});
-        shiftsWalletUser.shiftsConfirmed.forEach(async(item,index)=>{
-          if(item.shift._id.toString() === scid){
-            shiftsWalletUser.shiftsConfirmed.splice(index,1);
-            await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
+        shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
+        shiftsWalletUser.shiftsConfirmed.forEach(async (item, index) => {
+          if (item.shift._id.toString() === scid) {
+            shiftsWalletUser.shiftsConfirmed.splice(index, 1);
+            await ShiftsWalletService.update(
+              { _id: swUser_id },
+              shiftsWalletUser
+            );
           }
-        })
+        });
 
         //sw collector
-        shiftsWalletCollector.shiftsCanceled.push({shift: item.shift});
-        shiftsWalletCollector.shiftsConfirmed.splice(index,1);
-        await ShiftsWalletService.update({_id:sw_id}, shiftsWalletCollector);
+        shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+        shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
+        await ShiftsWalletService.update({ _id: sw_id }, shiftsWalletCollector);
 
-        return res.sendSuccess("Turno inválido")
+        return res.sendSuccess("Turno inválido");
       }
-    })
-
+    });
   } catch (error) {
     res.sendServerError(error.message);
   }
-}
+};
