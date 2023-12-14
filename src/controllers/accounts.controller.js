@@ -88,7 +88,7 @@ export const createCollector = async (req, res) => {
       imageProfile: "collector.jpg",
     };
 
-    const result= await CollectorService.create(newCollector);
+    const result = await CollectorService.create(newCollector);
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -97,11 +97,11 @@ export const createCollector = async (req, res) => {
 
 export const onCollector = async (req, res) => {
   try {
-    const cid= req.params.cid;
-    const collector= await CollectorService.getById(cid);
-    if(!collector) return res.sendRequestError("Petición incorrecta");
-    collector.status= "active";
-    const result= await CollectorService.update({_id:cid}, collector);
+    const cid = req.params.cid;
+    const collector = await CollectorService.getById(cid);
+    if (!collector) return res.sendRequestError("Petición incorrecta");
+    collector.status = "active";
+    const result = await CollectorService.update({ _id: cid }, collector);
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -110,11 +110,67 @@ export const onCollector = async (req, res) => {
 
 export const offCollector = async (req, res) => {
   try {
-    const cid= req.params.cid;
-    const collector= await CollectorService.getById(cid);
-    if(!collector) return res.sendRequestError("Petición incorrecta");
-    collector.status= "inactive";
-    const result= await CollectorService.update({_id:cid}, collector);
+    const cid = req.params.cid;
+    const collector = await CollectorService.getById(cid);
+    if (!collector) return res.sendRequestError("Petición incorrecta");
+    collector.status = "inactive";
+    const result = await CollectorService.update({ _id: cid }, collector);
+    res.sendSuccess(result);
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const createAdmincollector = async (req, res) => {
+  try {
+    const data = req.body;
+    const newPointsWallet = await PointsWalletService.create({});
+    const newshiftsWallet = await ShiftsWalletService.create({});
+
+    const newAdminCollector = {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      street: data.street,
+      height: data.height,
+      email: data.email,
+      age: data.age,
+      password: createHash(data.password),
+      role: "admincollector",
+      verifiedAccount: "UNVERIFIED",
+      status: "active",
+      shiftsWallet: newshiftsWallet._id,
+      pointsWallet: newPointsWallet._id,
+      service: "local-admin",
+      imageProfile: "admincollector.jpg",
+    };
+    const result= await CollectorService.create(newAdminCollector);
+    if(!result) return res.sendRequestError("Petición incorrecta");
+    res.sendSuccess(result);
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const onAdmincollector = async (req, res) => {
+  try {
+    const acid= req.params.acid;
+    const admincollector= await CollectorService.getById(acid);
+    if(!admincollector) return res.sendRequestError("Petición incorrecta");
+    admincollector.status="active";
+    const result= await CollectorService.update({_id:acid}, admincollector);
+    res.sendSuccess(result);
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const offAdmincollector = async (req, res) => {
+  try {
+    const acid= req.params.acid;
+    const admincollector= await CollectorService.getById(acid);
+    if(!admincollector) return res.sendRequestError("Petición incorrecta");
+    admincollector.status="inactive";
+    const result= await CollectorService.update({_id:acid}, admincollector);
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
