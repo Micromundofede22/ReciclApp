@@ -15,11 +15,11 @@ import {
 export default class AccountsRouter extends AppRouter{
     init(){
         //create admincollector
-        this.post("/admincollector",handlePolicies(["ADMIN"]), createAdmincollector)
+        this.post("/admincollector",handlePolicies(["ADMIN"]), createAdmincollector);
         //alta admincollector
-        this.put("/:acid/on-admincollector", handlePolicies(["ADMIN"]), onAdmincollector) //acid= admincollector id
+        this.put("/:acid/on-admincollector", handlePolicies(["ADMIN"]), onAdmincollector); //acid= admincollector id
         //baja admincollector
-        this.put("/:acid/off-admincollector", handlePolicies(["ADMIN"]), offAdmincollector)
+        this.put("/:acid/off-admincollector", handlePolicies(["ADMIN"]), offAdmincollector);
         //create user
         this.post("/user",handlePolicies(["ADMINCOLLECTOR"]), createUser); //cuenta status active
         //alta user
@@ -33,9 +33,5 @@ export default class AccountsRouter extends AppRouter{
         this.put("/:cid/on-collector",handlePolicies(["ADMINCOLLECTOR"]), onCollector);
         //baja collector
         this.put("/:cid/off-collector",handlePolicies(["ADMINCOLLECTOR"]), offCollector);
-
-        //alta admin-collector
-
-        //baja admin-collector
     };
 };

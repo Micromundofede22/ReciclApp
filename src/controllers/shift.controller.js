@@ -524,7 +524,7 @@ export const cancelCollectorShift = async (req, res) => {
 
     shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
-        item.shift.state = "cancelled";
+        item.shift.state = "cancelled-by-collector";
         //cancelo el turno en el user
         const user = await UserService.getEmail({
           email: item.shift.emailUser,
@@ -533,7 +533,7 @@ export const cancelCollectorShift = async (req, res) => {
         const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
         shiftsWalletUser.shiftsConfirmed.forEach(async (item, index) => {
           if (item.shift._id.toString() === scid) {
-            item.shift.state = "cancelled";
+            item.shift.state = "cancelled-by-collector";
             shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
             shiftsWalletUser.shiftsConfirmed.splice(index, 1);
             await ShiftsWalletService.update(
