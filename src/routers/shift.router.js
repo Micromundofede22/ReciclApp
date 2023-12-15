@@ -7,6 +7,7 @@ import {
   updateShiftAbsent,
   updateShiftReconfirm,
   updateShiftReconfirmCollector,
+  updateReAsignCollector,
   updateDoneShift,
   finalizedProcess,
   cancelShift,
@@ -29,18 +30,21 @@ export default class ShiftRouter extends AppRouter {
 
     this.put("/:said/reconfirm-user",handlePolicies(["USER"]), updateShiftReconfirm); //said= shift absent id
 
-    this.put("/:srcid/reconfirm-collector",handlePolicies(["COLLECTOR"]), updateShiftReconfirmCollector) //srcid= shift reconfirmed id
+    this.put("/:srcid/reconfirm-collector",handlePolicies(["COLLECTOR"]), updateShiftReconfirmCollector); //srcid= shift reconfirmed id
+
+    this.put("/:scid/re-asign-collector",handlePolicies(["ADMINCOLLECTOR"]), updateReAsignCollector); //scid=shift cancel id
 
     this.put("/:scid/done",handlePolicies(["COLLECTOR"]), updateDoneShift); //(scid= Shift Confirmed id)solo recolectores
 
     this.put("/:cid/finalized",handlePolicies(["ADMINCOLLECTOR"]), finalizedProcess); //(cid= collector ID)solo el admincollector. HABILITA POINTS 
   
-    this.delete("/:sid/cancel",handlePolicies(["USER"]), cancelShift);
+    this.delete("/:sid/cancel",handlePolicies(["USER"]), cancelShift); //cancelación del user
 
-    this.delete("/:scid/cancel-collector",handlePolicies(["COLLECTOR"]), cancelCollectorShift);
+    this.delete("/:scid/cancel-collector",handlePolicies(["COLLECTOR"]), cancelCollectorShift); //cancela el colector
 
     this.delete("/:cid/cancel/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),cancelAdminCollectorShift );
     
+
 
   }
 }

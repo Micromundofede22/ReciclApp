@@ -17,7 +17,8 @@ const collectorSchema = new mongoose.Schema({
   status: {type: String, default: "inactive"},
   shiftsWallet: { type: mongoose.Schema.Types.ObjectId, ref: "shifts-wallet" }, //billetera de turnos
   pointsWallet: {type: mongoose.Schema.Types.ObjectId , ref: "pointsWallet"},   //billetera puntos
-  collectionNumber:{type: Number, default:1},  
+  collectionNumber:{type: Number, default:1},
+  adminCollector: {type: String, required: true},  
   identityDocuments: {
     type: [
       {

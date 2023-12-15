@@ -209,7 +209,9 @@ export const updateShiftReconfirm = async (req, res) => {
         await ShiftsWalletService.update({ _id: swUser_ID }, shiftsWalletUser);
       }
     });
-    res.sendSuccess("Hemos informado al collector asignado sobre su reconfirmación de turno. Espere la reconfirmación de su parte.")
+    res.sendSuccess(
+      "Hemos informado al collector asignado sobre su reconfirmación de turno. Espere la reconfirmación de su parte."
+    );
   } catch (error) {
     res.sendServerError(error.message);
   }
@@ -238,13 +240,13 @@ export const updateShiftReconfirmCollector = async (req, res) => {
           //sw user
           shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
             if (item.shift._id.toString() === srcid) {
-                item.shift.state = "reconfirmed";
-                shiftsWalletUser.shiftsConfirmed.push({ shift: item.shift });
-                shiftsWalletUser.shiftsAbsents.splice(index, 1);
-                await ShiftsWalletService.update(
-                  { _id: swUser_ID },
-                  shiftsWalletUser
-                );
+              item.shift.state = "reconfirmed";
+              shiftsWalletUser.shiftsConfirmed.push({ shift: item.shift });
+              shiftsWalletUser.shiftsAbsents.splice(index, 1);
+              await ShiftsWalletService.update(
+                { _id: swUser_ID },
+                shiftsWalletUser
+              );
             }
           });
           //sw collector
@@ -260,29 +262,100 @@ export const updateShiftReconfirmCollector = async (req, res) => {
 
         //si collector rechaza el pedido de reconfirmación del turno
         if (data === false) {
+          //data admincollector(allí se manda el turno cancelado por collector, asi se le reasigna un nuevo collector al user)
+          const emailAdminCollector = collector.adminCollector;
+          const adminCollector = await CollectorService.getOne({
+            email: emailAdminCollector,
+          });
+          const swAC_id = adminCollector.shiftsWallet.toString();
+          const shiftsWalletAdminCollector = await ShiftsWalletService.getById(
+            swAC_id
+          );
+
           //sw user
           shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
             if (item.shift._id.toString() === srcid) {
-                item.shift.state = "reconfirm-cancelled";
-                shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
-                shiftsWalletUser.shiftsAbsents.splice(index, 1);
-                await ShiftsWalletService.update(
-                  { _id: swUser_ID },
-                  shiftsWalletUser
-                );
+              item.shift.state = "reconfirm-cancelled";
+              //tendrá un plazo de 24 hs para que el admincollector le reasigne un nuevo collector
+              shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
+              shiftsWalletUser.shiftsAbsents.splice(index, 1);
+              await ShiftsWalletService.update(
+                { _id: swUser_ID },
+                shiftsWalletUser
+              );
             }
           });
 
           //sw collector
           item.shift.state = "reconfirm-cancelled";
           shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+          shiftsWalletAdminCollector.shiftsCanceled.push({ shift: item.shift });
           shiftsWalletCollector.shiftsAbsents.splice(index, 1);
           await ShiftsWalletService.update(
             { _id: sw_idCollector },
             shiftsWalletCollector
           );
+          await ShiftsWalletService.update(
+            //turno cancelado, se guarda en la wallet del admin collector
+            { _id: swAC_id },
+            shiftsWalletAdminCollector
+          );
           return res.sendSuccess("Turno reconfirmado cancelado");
         }
+      }
+    });
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+};
+
+export const updateReAsignCollector = async (req, res) => {
+  try {
+    const scid = req.params.scid;
+    const emailNewCollector = req.body.newCollector;
+    const adminCollector = req.user.tokenInfo;
+    const swAC_id = adminCollector.shiftsWallet.toString();
+    const shiftsWalletAdminCollector = await ShiftsWalletService.getById(
+      swAC_id
+    );
+
+    shiftsWalletAdminCollector.shiftsCanceled.forEach(async (item, index) => {
+      if (item.shift._id.toString() === scid) {
+       
+        //data user
+        const emailUser = item.shift.emailUser;
+        const user = await UserService.getEmail(emailUser);
+        const swUser_id = user.shiftsWallet.toString();
+        const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
+        //data collector
+        const newCollector= await CollectorService.getOne({emailNewCollector});
+        const swCollector_id= newCollector.shiftsWallet.toString();
+        const shiftsWalletCollector= await ShiftsWalletService.getById(swCollector_id);
+
+        const shiftReAsign = {
+          _id: item.shift._id.toString(),
+          state: "re-asigned",
+          collector: `${newCollector.first_name} ${newCollector.last_name}`,
+          emailCollector: newCollector.email,
+          collectionNumberCollector: newCollector.collectionNumber,
+          date: item.shift.date,
+          hour: item.shift.hour,
+          street: item.shift.street,
+          height: item.shift.height,
+          emailUser: item.shift.emailUser,
+          recyclingNumber: user.recyclingNumber,
+          points: item.shift.points,
+          activatedPoints: false,
+        };
+
+        shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign });
+        shiftsWalletCollector.shiftsConfirmed.push({shift: shiftReAsign});
+        await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
+        await ShiftsWalletService.update({_id:swCollector_id}, shiftsWalletCollector);
+       //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector, 
+       //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
+
+        return res.sendSuccess("Turno reasignado");
       }
     });
   } catch (error) {
@@ -522,6 +595,16 @@ export const cancelCollectorShift = async (req, res) => {
     if (!shiftsWalletCollector)
       return res.sendRequestError("Petición incorrecta");
 
+    //data admincollector
+    const emailAdminCollector = collector.adminCollector;
+    const adminCollector = await CollectorService.getOne({
+      email: emailAdminCollector,
+    });
+    const swAC_id = adminCollector.shiftsWallet.toString();
+    const shiftsWalletAdminCollector = await ShiftsWalletService.getById(
+      swAC_id
+    );
+
     shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
         item.shift.state = "cancelled-by-collector";
@@ -544,8 +627,14 @@ export const cancelCollectorShift = async (req, res) => {
         });
         //cancelo el turno aca en la wallet del collector
         shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+        shiftsWalletAdminCollector.shiftsCanceled.push({ shift: item.shift });
         shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
         await ShiftsWalletService.update({ _id: sw_id }, shiftsWalletCollector);
+        await ShiftsWalletService.update(
+          //lo mando a la wallet del admincollector para que reasigne collector al shift
+          { _id: swAC_id },
+          shiftsWalletAdminCollector
+        );
         return res.sendSuccess("Turno cancelado, ya hemos avisado al usuario");
       }
     });
@@ -566,7 +655,7 @@ export const cancelAdminCollectorShift = async (req, res) => {
     shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       //si el turno está confirmado y también realizado (done= true), modificar sus pointsWallet
       //cancelando los puntos que en done, se le sumaron en su pw en notenabled (solo en user, collector no)
-      //ya que los puntos en collector
+      //ya que los puntos en collector solo se cargan en endpoint finalized
       if (item.shift._id.toString() === scid) {
         item.shift.state = "invalid";
         const user = await UserService.getEmail({

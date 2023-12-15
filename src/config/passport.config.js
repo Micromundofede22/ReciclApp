@@ -68,6 +68,8 @@ const initializePassport = () => {
               shiftsWallet: shiftsWallet._id,
               pointsWallet: newPointsWallet._id,
               identityDocuments: [],
+              adminCollector,
+              status: "inactive",
               service: "local",
               imageProfile: "collector.jpg",
             };
