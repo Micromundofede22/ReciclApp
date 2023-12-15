@@ -64,6 +64,28 @@ export const createShift = async (req, res) => {
   }
 };
 
+export const updateShiftConfirmedAdminCol= async(req,res)=>{
+    try {
+      const sid= req.params.sid;
+      const emailCollector= req.body.emailCollector;
+      const shift= await ShiftsService.getById(sid);
+      const emailUser= shift.emailUser;
+      const collector= await CollectorService.getOne({email:emailCollector});
+      const user= await UserService.getEmail({email:emailUser});
+      const swCollector_id= collector.shiftsWallet.toString();
+      const shiftsWalletCollector= await ShiftsWalletService.getById(swCollector_id);
+      const swUser_id= user.shiftsWallet.toString();
+      const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
+
+      const shiftConfirmed={
+        
+      }
+
+    } catch (error) {
+      res.sendServerError(error.message);
+    };
+};
+
 export const updateShiftConfirmed = async (req, res) => {
   //solo recolectores
   try {
@@ -361,10 +383,6 @@ export const updateReAsignCollector = async (req, res) => {
        //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector, 
        //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
        //debería hacer una shifts wallet exclusiva para admincollector
-        // item.shift.state= "re-asigned";
-        // item.shift.emailCollector= emailNewCollector;
-
-
 
         return res.sendSuccess("Turno reasignado");
       }

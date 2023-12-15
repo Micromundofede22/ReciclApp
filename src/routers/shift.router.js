@@ -1,8 +1,9 @@
 import AppRouter from "./app.router.js";
 import {
   getShifts,
-  createShift,
   getByIdShift,
+  createShift,
+  updateShiftConfirmedAdminCol,
   updateShiftConfirmed,
   updateShiftAbsent,
   updateShiftReconfirm,
@@ -23,6 +24,8 @@ export default class ShiftRouter extends AppRouter {
     this.get("/:sid",handlePolicies(["COLLECTOR"]), getByIdShift); //solo el user, y collector
 
     this.post("/", handlePolicies(["USER", "PREMIUM"]), createShift); //solo user y premium
+
+    this.put("/:sid/confirmed-admincollector", handlePolicies(["ADMINCOLLECTOR"]), updateShiftConfirmedAdminCol) //admin collector confirma el turno al user
 
     this.put("/:sid/confirmed",handlePolicies(["COLLECTOR"]), updateShiftConfirmed); //solo recolector. Confirma turno y lo mete en su shiftswallet
 
