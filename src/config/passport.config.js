@@ -38,7 +38,7 @@ const initializePassport = () => {
       },
       //si o si en este orden req, username,password,done
       async (req, username, password, done) => {
-        const { first_name, last_name, street, height, email, age, role } = req.body;
+        const { first_name, last_name, street, height, email, age, role,adminCollector } = req.body;
 
         try {
           //registro de recolectores
@@ -64,11 +64,11 @@ const initializePassport = () => {
               age,
               password: createHash(password),
               role,
+              adminCollector,
               verifiedAccount: "UNVERIFIED",
               shiftsWallet: shiftsWallet._id,
               pointsWallet: newPointsWallet._id,
               identityDocuments: [],
-              adminCollector,
               status: "inactive",
               service: "local",
               imageProfile: "collector.jpg",

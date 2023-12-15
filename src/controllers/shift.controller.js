@@ -324,11 +324,11 @@ export const updateReAsignCollector = async (req, res) => {
        
         //data user
         const emailUser = item.shift.emailUser;
-        const user = await UserService.getEmail(emailUser);
+        const user = await UserService.getEmail({email:emailUser});
         const swUser_id = user.shiftsWallet.toString();
         const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
         //data collector
-        const newCollector= await CollectorService.getOne({emailNewCollector});
+        const newCollector= await CollectorService.getOne({email: emailNewCollector});
         const swCollector_id= newCollector.shiftsWallet.toString();
         const shiftsWalletCollector= await ShiftsWalletService.getById(swCollector_id);
 
@@ -348,16 +348,28 @@ export const updateReAsignCollector = async (req, res) => {
           activatedPoints: false,
         };
 
-        shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign });
+        shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign }); //pusheo el turno reasignado en confirmed
+        shiftsWalletUser.shiftsCanceled.forEach((item,index)=>{ //elimino el turno cancelado 
+          if(item.shift._id === scid){
+            shiftsWalletUser.shiftsCanceled.splice(index, 1);
+          }
+        })
         shiftsWalletCollector.shiftsConfirmed.push({shift: shiftReAsign});
         await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
         await ShiftsWalletService.update({_id:swCollector_id}, shiftsWalletCollector);
+
        //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector, 
        //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
+       //debería hacer una shifts wallet exclusiva para admincollector
+        // item.shift.state= "re-asigned";
+        // item.shift.emailCollector= emailNewCollector;
+
+
 
         return res.sendSuccess("Turno reasignado");
       }
     });
+
   } catch (error) {
     res.sendServerError(error.message);
   }
