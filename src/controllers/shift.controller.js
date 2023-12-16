@@ -78,8 +78,30 @@ export const updateShiftConfirmedAdminCol= async(req,res)=>{
       const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
 
       const shiftConfirmed={
-        
-      }
+        _id: shift._id,
+        state: "confirmed",
+        collector: `${collector.first_name} ${collector.last_name}`,
+        emailCollector: collector.email,
+        collectionNumberCollector: collector.collectionNumber,
+        done: false,
+        date: shift.date,
+        hour: shift.hour,
+        street: shift.street,
+        height:shift.height,
+        emailUser: user.email,
+        recyclingNumber:user.recyclingNumber,
+        points:shift.points,
+        activatedPoints: false
+      };
+
+      shiftsWalletCollector.shiftsConfirmed.push({shift: shiftConfirmed});
+      shiftsWalletUser.shiftsConfirmed.push({shift: shiftConfirmed});
+
+      await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
+      await ShiftsWalletService.update({_id:swCollector_id}, shiftsWalletCollector);
+      await ShiftsService.delete(sid);
+
+      res.sendSuccess("Turno confirmado");
 
     } catch (error) {
       res.sendServerError(error.message);
