@@ -32,3 +32,13 @@ export const googleCallback = (req,res) => {
         .cookie(SIGNED_COOKIE_NAME, req.user.token, { signed: true }) //secreto de la firma está en la app.use
         .sendSuccess("Logueado google");
 };
+
+//logout
+export const logout= (req,res) =>{
+    try {
+        req.session.destroy(err => { }); //destruyo la session que usa passport
+        res.clearCookie(SIGNED_COOKIE_NAME);//limpio la cookie que tiene el token
+    } catch (error) {
+        res.sendServerError(error.message);
+    };
+};
