@@ -176,3 +176,11 @@ export const offAdmincollector = async (req, res) => {
     res.sendServerError(error.message);
   }
 };
+
+export const uploadDocuments= async(req,res) =>{
+  try {
+    
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+}

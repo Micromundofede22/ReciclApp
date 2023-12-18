@@ -1,5 +1,6 @@
 import AppRouter from "./app.router.js";
 import { handlePolicies } from "../middleware/authentication.js";
+import { uploader } from "../middleware/multer.js";
 import {
     createAdmincollector,
     onAdmincollector,
@@ -9,7 +10,8 @@ import {
     onUser,
     createCollector,
     onCollector,
-    offCollector
+    offCollector,
+    uploadDocuments
 } from "../controllers/accounts.controller.js";
 
 export default class AccountsRouter extends AppRouter{
@@ -33,5 +35,8 @@ export default class AccountsRouter extends AppRouter{
         this.put("/:cid/on-collector",handlePolicies(["ADMINCOLLECTOR"]), onCollector);
         //baja collector
         this.put("/:cid/off-collector",handlePolicies(["ADMINCOLLECTOR"]), offCollector);
+
+        //alta accounts, subiendo documentos identidad y addres
+        this.put("/:uid/upload-documents",uploader.fields([{name: "dni"},{name: "addres"}]), uploadDocuments);
     };
 };

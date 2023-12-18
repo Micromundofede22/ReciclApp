@@ -9,8 +9,9 @@ import {
   getGoogle,
   googleCallback,
   logout,
-  editProfile
+  editProfile,
 } from "../controllers/session.controller.js";
+
 
 export default class SessionRouter extends AppRouter {
   init() {
@@ -59,8 +60,13 @@ export default class SessionRouter extends AppRouter {
 
     this.get("/logout", passportCall("jwt"), logout);
 
+
     //editar perfil y contraseñas
-    this.put("/:emailUser/edit-profile",passportCall("jwt"), editProfile )
+    this.put("/:emailUser/edit-profile",passportCall("jwt"),  editProfile );
+
+
+
+
 
 
   }

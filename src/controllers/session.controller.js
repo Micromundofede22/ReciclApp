@@ -50,18 +50,18 @@ export const editProfile = async (req, res) => {
     if(infoToken.email != emailUser) return res.unauthorized("No autorizado");
 
     const user = await UserService.getEmail({ email: emailUser });
-    const userID = user._id.toString();
-    const data = req.body;
     const collector= await CollectorService.getOne({email: emailUser});
-    
+    if(!user && !collector) return res.sendRequestError("Petición incorrecta");
 
+    const data = req.body;
+    
     const newAddres = {
       street: data.street,
       height: data.height
     //   identityDocuments: data.identityDocuments,
     };
     if (user) {
-        console.log("por aca ")
+    const userID = user._id.toString();
       await UserService.update(userID, newAddres);
       return res.sendSuccess("Dirección actualizada");
     }
@@ -70,8 +70,10 @@ export const editProfile = async (req, res) => {
         await CollectorService.update({_id: collectorID}, newAddres);
         return res.sendSuccess("Dirección actualizada");
      }
-     if(!user && !collector) return res.sendRequestError("Petición incorrecta")
+     
   } catch (error) {
     res.sendServerError(error.message);
   }
 };
+
+
