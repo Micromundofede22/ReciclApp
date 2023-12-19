@@ -186,7 +186,8 @@ export const uploadDocuments = async (req, res) => {
 
     const user = await UserService.getById(uid);
     const documentsCurrent = user.documents;
-    const files = req.files;
+    const files = req.files; //documentos
+    // console.log(files);
 
     //dni
     if (
@@ -195,12 +196,13 @@ export const uploadDocuments = async (req, res) => {
     ) {
       documentsCurrent.push({
         name: files.dni[0].filename,
-        reference: files.dni[0].path,
+        reference: files.dni[0].path
       });
     } else if (files.dni) {
       documentsCurrent.forEach((item) => {
         if (item.name.includes("dni")) {
-          (item.name = files.dni[0].filename), (reference = files.dni[0].path);
+          item.name = files.dni[0].filename,
+          item.reference = files.dni[0].path
         }
       });
     }
@@ -211,19 +213,25 @@ export const uploadDocuments = async (req, res) => {
     ) {
       documentsCurrent.push({
         name: files.addres[0].filename,
-        reference: files.addres[0].path,
+        reference: files.addres[0].path
       });
     } else if (files.addres) {
       documentsCurrent.forEach((item) => {
         if (item.name.includes("addres")) {
-          (item.name = files.addres[0].filename),
-            (reference = files.addres[0].path);
+          item.name = files.addres[0].filename,
+          item.reference = files.addres[0].path
         }
       });
-    };
+    }
+    //si user cargo ambos documentos, su cuenta se activa
+    if (documentsCurrent.length == 2) {
+      await UserService.update(uid, { status: "active" });
+    }
 
-    await UserService.update(uid, {documents: documentsCurrent});
-    res.sendSuccess("Archivos subidos con éxito. Dentro de las próximas 24 hs habilitaremos su perfil, si la documentación es correcta")
+    await UserService.update(uid, { documents: documentsCurrent });
+    res.sendSuccess(
+      "Archivos subidos con éxito. Su cuenta ya se encuentra activa. Ya puede pedir turnos para retirar sus materias primas. Gracias! Tu labor, será recompensada."
+    );
   } catch (error) {
     res.sendServerError(error.message);
   }
