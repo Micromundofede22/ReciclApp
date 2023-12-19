@@ -143,8 +143,8 @@ export const createAdmincollector = async (req, res) => {
       service: "local-admin",
       imageProfile: "admincollector.jpg",
     };
-    const result= await CollectorService.create(newAdminCollector);
-    if(!result) return res.sendRequestError("Petición incorrecta");
+    const result = await CollectorService.create(newAdminCollector);
+    if (!result) return res.sendRequestError("Petición incorrecta");
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -153,11 +153,11 @@ export const createAdmincollector = async (req, res) => {
 
 export const onAdmincollector = async (req, res) => {
   try {
-    const acid= req.params.acid;
-    const admincollector= await CollectorService.getById(acid);
-    if(!admincollector) return res.sendRequestError("Petición incorrecta");
-    admincollector.status="active";
-    const result= await CollectorService.update({_id:acid}, admincollector);
+    const acid = req.params.acid;
+    const admincollector = await CollectorService.getById(acid);
+    if (!admincollector) return res.sendRequestError("Petición incorrecta");
+    admincollector.status = "active";
+    const result = await CollectorService.update({ _id: acid }, admincollector);
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
@@ -166,21 +166,65 @@ export const onAdmincollector = async (req, res) => {
 
 export const offAdmincollector = async (req, res) => {
   try {
-    const acid= req.params.acid;
-    const admincollector= await CollectorService.getById(acid);
-    if(!admincollector) return res.sendRequestError("Petición incorrecta");
-    admincollector.status="inactive";
-    const result= await CollectorService.update({_id:acid}, admincollector);
+    const acid = req.params.acid;
+    const admincollector = await CollectorService.getById(acid);
+    if (!admincollector) return res.sendRequestError("Petición incorrecta");
+    admincollector.status = "inactive";
+    const result = await CollectorService.update({ _id: acid }, admincollector);
     res.sendSuccess(result);
   } catch (error) {
     res.sendServerError(error.message);
   }
 };
 
-export const uploadDocuments= async(req,res) =>{
+export const uploadDocuments = async (req, res) => {
   try {
-    
+    const userToken = req.user.tokenInfo;
+    const uid = req.params.uid.toString();
+    if (uid != userToken._id.toString())
+      return res.unauthorized("No autorizado");
+
+    const user = await UserService.getById(uid);
+    const documentsCurrent = user.documents;
+    const files = req.files;
+
+    //dni
+    if (
+      files.dni &&
+      !documentsCurrent.some((item) => item.name.includes("dni"))
+    ) {
+      documentsCurrent.push({
+        name: files.dni[0].filename,
+        reference: files.dni[0].path,
+      });
+    } else if (files.dni) {
+      documentsCurrent.forEach((item) => {
+        if (item.name.includes("dni")) {
+          (item.name = files.dni[0].filename), (reference = files.dni[0].path);
+        }
+      });
+    }
+    //servicio con addres
+    if (
+      files.addres &&
+      !documentsCurrent.some((item) => item.name.includes("addres"))
+    ) {
+      documentsCurrent.push({
+        name: files.addres[0].filename,
+        reference: files.addres[0].path,
+      });
+    } else if (files.addres) {
+      documentsCurrent.forEach((item) => {
+        if (item.name.includes("addres")) {
+          (item.name = files.addres[0].filename),
+            (reference = files.addres[0].path);
+        }
+      });
+    };
+
+    await UserService.update(uid, {documents: documentsCurrent});
+    res.sendSuccess("Archivos subidos con éxito. Dentro de las próximas 24 hs habilitaremos su perfil, si la documentación es correcta")
   } catch (error) {
     res.sendServerError(error.message);
   }
-}
+};
