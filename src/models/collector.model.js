@@ -19,13 +19,14 @@ const collectorSchema = new mongoose.Schema({
   pointsWallet: {type: mongoose.Schema.Types.ObjectId , ref: "pointsWallet"},   //billetera puntos
   collectionNumber:{type: Number, default:1},
   adminCollector: {type: String, required: true},  
-  identityDocuments: {
+  documents: {
     type: [
       {
-        imageDNI: { type: String, required: false }, //luego ponerla como obligatoria
+        name: String,
+        reference: String,
       },
     ],
-    default: [],
+    default: []
   },
   service: { type: String, required: false },
   imageProfile: { type: String, required: false },

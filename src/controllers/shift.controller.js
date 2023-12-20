@@ -31,6 +31,7 @@ export const getByIdShift = async (req, res) => {
 export const createShift = async (req, res) => {
   try {
     const user = req.user.tokenInfo;
+    if(user.status === "inactive") return res.unauthorized("Su cuenta está inactiva aún. Cargue los documentos requeridos para activarla");
     const data = req.body;
     //turno en collecion turnos no confirmados
 

@@ -53,16 +53,23 @@ export const editProfile = async (req, res) => {
     const collector= await CollectorService.getOne({email: emailUser});
     if(!user && !collector) return res.sendRequestError("Petición incorrecta");
 
-    const data = req.body;
-    
-    const newAddres = {
-      street: data.street,
-      height: data.height
-    //   identityDocuments: data.identityDocuments,
-    };
+    const data= req.body; //datos json
+    const file = req.file; //archivo multer single
+    console.log(data)
+
     if (user) {
     const userID = user._id.toString();
-      await UserService.update(userID, newAddres);
+
+    user.documents.forEach(item => {
+      if(item.name.includes("addres")){ //reemplazo el archivo viejo del servicio addres
+        item.name= file.filename;
+        item.reference= file.path;
+      }
+    });
+      await UserService.update(userID, {
+        street: data.street,
+        height: data.height,
+      documents: user.documents});
       return res.sendSuccess("Dirección actualizada");
     }
      if(collector){

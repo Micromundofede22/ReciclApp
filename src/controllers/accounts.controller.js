@@ -1,10 +1,11 @@
+import { SIGNED_COOKIE_NAME } from "../config/config.js";
 import {
   UserService,
   PointsWalletService,
   ShiftsWalletService,
   CollectorService,
 } from "../service/service.js";
-import { createHash } from "../utils.js";
+import { createHash, generateToken } from "../utils.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -228,8 +229,13 @@ export const uploadDocuments = async (req, res) => {
       await UserService.update(uid, { status: "active" });
     }
 
-    await UserService.update(uid, { documents: documentsCurrent });
-    res.sendSuccess(
+    const updatedUser= await UserService.update(uid, { documents: documentsCurrent });
+    
+    const token= generateToken(updatedUser);//actualizo el token 
+
+    res
+    .cookie(SIGNED_COOKIE_NAME, token,  { signed: false }) //vuelvo a generar una cookie con el user actualizado y con su status ya activo, asi puede sacar turnos sin tener que cerrar sesion y volver a abrir
+    .sendSuccess(
       "Archivos subidos con éxito. Su cuenta ya se encuentra activa. Ya puede pedir turnos para retirar sus materias primas. Gracias! Tu labor, será recompensada."
     );
   } catch (error) {
