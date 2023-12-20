@@ -186,58 +186,116 @@ export const uploadDocuments = async (req, res) => {
       return res.unauthorized("No autorizado");
 
     const user = await UserService.getById(uid);
-    const documentsCurrent = user.documents;
-    const files = req.files; //documentos
-    // console.log(files);
+    const collector= await CollectorService.getById(uid);
 
-    //dni
-    if (
-      files.dni &&
-      !documentsCurrent.some((item) => item.name.includes("dni"))
-    ) {
-      documentsCurrent.push({
-        name: files.dni[0].filename,
-        reference: files.dni[0].path
-      });
-    } else if (files.dni) {
-      documentsCurrent.forEach((item) => {
-        if (item.name.includes("dni")) {
-          item.name = files.dni[0].filename,
-          item.reference = files.dni[0].path
-        }
-      });
-    }
-    //servicio con addres
-    if (
-      files.addres &&
-      !documentsCurrent.some((item) => item.name.includes("addres"))
-    ) {
-      documentsCurrent.push({
-        name: files.addres[0].filename,
-        reference: files.addres[0].path
-      });
-    } else if (files.addres) {
-      documentsCurrent.forEach((item) => {
-        if (item.name.includes("addres")) {
-          item.name = files.addres[0].filename,
-          item.reference = files.addres[0].path
-        }
-      });
-    }
-    //si user cargo ambos documentos, su cuenta se activa
-    if (documentsCurrent.length == 2) {
-      await UserService.update(uid, { status: "active" });
-    }
-
-    const updatedUser= await UserService.update(uid, { documents: documentsCurrent });
-    
-    const token= generateToken(updatedUser);//actualizo el token 
-
-    res
-    .cookie(SIGNED_COOKIE_NAME, token,  { signed: false }) //vuelvo a generar una cookie con el user actualizado y con su status ya activo, asi puede sacar turnos sin tener que cerrar sesion y volver a abrir
-    .sendSuccess(
-      "Archivos subidos con éxito. Su cuenta ya se encuentra activa. Ya puede pedir turnos para retirar sus materias primas. Gracias! Tu labor, será recompensada."
-    );
+    if(user){
+      const documentsCurrent = user.documents;
+      const files = req.files; //documentos
+      // console.log(files);
+  
+      //dni
+      if (
+        files.dni &&
+        !documentsCurrent.some((item) => item.name.includes("dni"))
+      ) {
+        documentsCurrent.push({
+          name: files.dni[0].filename,
+          reference: files.dni[0].path
+        });
+      } else if (files.dni) {
+        documentsCurrent.forEach((item) => {
+          if (item.name.includes("dni")) {
+            item.name = files.dni[0].filename,
+            item.reference = files.dni[0].path
+          }
+        });
+      }
+      //servicio con addres
+      if (
+        files.addres &&
+        !documentsCurrent.some((item) => item.name.includes("addres"))
+      ) {
+        documentsCurrent.push({
+          name: files.addres[0].filename,
+          reference: files.addres[0].path
+        });
+      } else if (files.addres) {
+        documentsCurrent.forEach((item) => {
+          if (item.name.includes("addres")) {
+            item.name = files.addres[0].filename,
+            item.reference = files.addres[0].path
+          }
+        });
+      };
+      //si user cargo ambos documentos, su cuenta se activa
+      if (documentsCurrent.length == 2) {
+        await UserService.update(uid, { status: "active" });
+      };
+  
+      const updatedUser= await UserService.update(uid, { documents: documentsCurrent });
+      
+      const token= generateToken(updatedUser);//actualizo el token 
+  
+      return res
+      .cookie(SIGNED_COOKIE_NAME, token,  { signed: false }) //vuelvo a generar una cookie con el user actualizado y con su status ya activo, asi puede sacar turnos sin tener que cerrar sesion y volver a abrir
+      .sendSuccess(
+        "Archivos subidos con éxito. Su cuenta ya se encuentra activa. Ya puede pedir turnos para retirar sus materias primas. Gracias! Tu labor, será recompensada."
+      );
+    };
+  
+    if(collector){
+      const documentsCurrent = collector.documents;
+      const files = req.files; //documentos
+  
+      //dni
+      if (
+        files.dni &&
+        !documentsCurrent.some((item) => item.name.includes("dni"))
+      ) {
+        documentsCurrent.push({
+          name: files.dni[0].filename,
+          reference: files.dni[0].path
+        });
+      } else if (files.dni) {
+        documentsCurrent.forEach((item) => {
+          if (item.name.includes("dni")) {
+            item.name = files.dni[0].filename,
+            item.reference = files.dni[0].path
+          }
+        });
+      }
+      //servicio con addres
+      if (
+        files.addres &&
+        !documentsCurrent.some((item) => item.name.includes("addres"))
+      ) {
+        documentsCurrent.push({
+          name: files.addres[0].filename,
+          reference: files.addres[0].path
+        });
+      } else if (files.addres) {
+        documentsCurrent.forEach((item) => {
+          if (item.name.includes("addres")) {
+            item.name = files.addres[0].filename,
+            item.reference = files.addres[0].path
+          }
+        });
+      };
+      //si user cargo ambos documentos, su cuenta se activa
+      if (documentsCurrent.length == 2) {
+        await CollectorService.update(uid, { status: "active" });
+      };
+  
+      const updatedCollector= await CollectorService.update(uid, { documents: documentsCurrent });
+      
+      const token= generateToken(updatedCollector);//actualizo el token 
+  
+      res
+      .cookie(SIGNED_COOKIE_NAME, token,  { signed: false }) //vuelvo a generar una cookie con el user actualizado y con su status ya activo, asi puede sacar turnos sin tener que cerrar sesion y volver a abrir
+      .sendSuccess(
+        "Archivos subidos con éxito. Su cuenta ya se encuentra activa. Ya puede operar como uno de nuestros recolectores."
+      );
+    };
   } catch (error) {
     res.sendServerError(error.message);
   }

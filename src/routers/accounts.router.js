@@ -37,10 +37,10 @@ export default class AccountsRouter extends AppRouter{
         //baja collector
         this.put("/:cid/off-collector",handlePolicies(["ADMINCOLLECTOR"]), offCollector);
 
-        //alta accounts, subiendo documentos identidad y addres
-        this.put("/:uid/upload-documents",uploader.fields([{name: "dni"},{name: "addres"}]), uploadDocuments);
+        //alta accounts (status=active), subiendo documentos identidad y addres
+        this.put("/:uid/upload-documents",handlePolicies(["COLLECTOR", "USER"]),uploader.fields([{name: "dni"},{name: "addres"}]), uploadDocuments);
 
         //editar perfil y contraseñas
-    this.put("/:emailUser/edit-profile", uploader.single("addres"), editAddres );
+    this.put("/:emailUser/edit-addres", uploader.single("addres"), editAddres );
     };
 };

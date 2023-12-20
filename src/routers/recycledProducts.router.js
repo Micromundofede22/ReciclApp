@@ -1,18 +1,25 @@
 import AppRouter from "./app.router.js";
-import { createProduct,getProducts,getByIdProduct,updateProduct,deleteProduct } from "../controllers/recycledProducts.controller.js";
+import { handlePolicies } from "../middleware/authentication.js";
+import { 
+    createProduct,
+    getProducts,
+    getByIdProduct,
+    updateProduct,
+    deleteProduct 
+} from "../controllers/recycledProducts.controller.js";
 
 
 export default class RecycledProductsRouter extends AppRouter{
     init(){
-        this.post("/", createProduct) //solo puede crear admin
+        this.post("/", handlePolicies(["PREMIUM", "ADMIN"]), createProduct) //solo puede crear admin, y un PREMIUM que tenga algo para que le reciclen
 
-        this.get("/", getProducts);
+        this.get("/",handlePolicies(["USER","PREMIUM"]), getProducts);
 
-        this.get("/:pid", getByIdProduct);
+        this.get("/:pid",handlePolicies(["USER","PREMIUM"]), getByIdProduct);
 
-        this.put("/:pid", updateProduct);
+        this.put("/:pid",handlePolicies(["PREMIUM", "ADMIN"]), updateProduct); //premium solo si es su propio producto
 
-        this.delete("/:pid", deleteProduct);
+        this.delete("/:pid",handlePolicies(["PREMIUM", "ADMIN"]), deleteProduct); //premium solo si es su propio producto
     };
 
 };

@@ -18,7 +18,7 @@ const run = (app) => {
 
     //endpoint
     app.use("/api/session", sessionRouter.getRouter());                    //sesiones
-    app.use("/api/recycled-products", recycledproductsrouter.getRouter()); //productos a reciclar
+    app.use("/api/recycled-products",passportCall("jwt"), recycledproductsrouter.getRouter()); //productos a reciclar
     app.use("/api/points-wallet", pointswalletrouter.getRouter());         //biletera puntos
     app.use("/api/shifts-wallet",passportCall("jwt"), shiftswalletrouter.getRouter()); //billetera turnos
     app.use("/api/shift", passportCall("jwt"),shiftrouter.getRouter());    //turnos

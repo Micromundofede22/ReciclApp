@@ -2,14 +2,31 @@ import mongoose from "mongoose";
 
 //cada recolector tendrá su propia billetera de turnos, donde si  irán agendando los turnos que toman
 const shiftsWalletSchema = new mongoose.Schema({
+  productsToRecycled: {
+    carton: {
+      quantity: { type: Number, default: 0 },
+      points: { type: Number, default: 0 },
+    },
+    latas: {
+      quantity: { type: Number, default: 0 },
+      points: { type: Number, default: 0 },
+    },
+    botellasVidrio: {
+      quantity: { type: Number, default: 0 },
+      points: { type: Number, default: 0 },
+    },
+    botellasPlastico: {
+      quantity: { type: Number, default: 0 },
+      points: { type: Number, default: 0 },
+    },
+  },
   shiftsNotConfirmed: {
     type: [
       {
         shift: {
           _id: false,
           type: mongoose.Schema.Types.ObjectId,
-          ref: "shifts-not-confirmed"
-          
+          ref: "shifts-not-confirmed",
         },
       },
     ],
@@ -20,12 +37,12 @@ const shiftsWalletSchema = new mongoose.Schema({
     type: [
       {
         shift: {
-          _id: {type: String},
+          _id: { type: String },
           state: { type: String }, // estado, confirmado o pendiente (lo confirma un recoletor)
           collector: { type: String, required: true }, //recolector asignado
-          emailCollector: {type: String, required: true},
+          emailCollector: { type: String, required: true },
           collectionNumberCollector: { type: Number, required: true }, //número de recolecciones del recolector
-          done: {type: Boolean,required: true, default: false}, //       //cuando retira cartones, pone true
+          done: { type: Boolean, required: true, default: false }, //       //cuando retira cartones, pone true
           date: { type: String, required: true }, //fecha
           hour: { type: String, required: true }, //hora
           street: { type: String, required: true }, //calle
@@ -44,17 +61,17 @@ const shiftsWalletSchema = new mongoose.Schema({
     type: [
       {
         shift: {
-          _id: {type: String},
-          state: { type: String, default: "finalized" }, 
-          collector: { type: String, required: true }, 
-          emailCollector: {type: String, required: true},
+          _id: { type: String },
+          state: { type: String, default: "finalized" },
+          collector: { type: String, required: true },
+          emailCollector: { type: String, required: true },
           collectionNumberCollector: { type: Number, required: true }, //actualizarlo ya q en done se suma 1
-          done: {type: Boolean,required: true, default: false}, //       
-          date: { type: String, required: true }, 
-          hour: { type: String, required: true }, 
-          street: { type: String, required: true }, 
-          height: { type: Number, required: true }, 
-          emailUser: { type: String, required: true }, 
+          done: { type: Boolean, required: true, default: false }, //
+          date: { type: String, required: true },
+          hour: { type: String, required: true },
+          street: { type: String, required: true },
+          height: { type: Number, required: true },
+          emailUser: { type: String, required: true },
           recyclingNumber: { type: Number, required: true }, //actualizarlo ya q en dondese suma 1
           points: { type: Number, required: true }, //actualizarlos si se modificó en done con kg
         },
@@ -64,16 +81,16 @@ const shiftsWalletSchema = new mongoose.Schema({
     _id: false,
   },
   //turnos user ausentes
-  shiftsAbsents:{ 
+  shiftsAbsents: {
     type: [
       {
         shift: {
-          _id: {type: String},
+          _id: { type: String },
           state: { type: String, default: "absent" }, // estado, confirmado o pendiente (lo confirma un recoletor)
           collector: { type: String, required: true }, //recolector asignado
-          emailCollector: {type: String, required: true},
+          emailCollector: { type: String, required: true },
           collectionNumberCollector: { type: Number, required: true }, //número de recolecciones del recolector
-          done: {type: Boolean,required: true, default: false}, //       //cuando retira cartones, pone true
+          done: { type: Boolean, required: true, default: false }, //       //cuando retira cartones, pone true
           date: { type: String, required: true }, //fecha
           hour: { type: String, required: true }, //hora
           street: { type: String, required: true }, //calle
@@ -92,21 +109,21 @@ const shiftsWalletSchema = new mongoose.Schema({
     type: [
       {
         shift: {
-          _id: {type: String},
-          state: { type: String, default: "cancelled"}, 
-          emailCollector: {type: String, required: true},    
-          date: { type: String, required: true }, 
-          hour: { type: String, required: true }, 
-          street: { type: String, required: true }, 
-          height: { type: Number, required: true }, 
-          emailUser: { type: String, required: true }, 
-          points: { type: Number, required: true }, 
+          _id: { type: String },
+          state: { type: String, default: "cancelled" },
+          emailCollector: { type: String, required: true },
+          date: { type: String, required: true },
+          hour: { type: String, required: true },
+          street: { type: String, required: true },
+          height: { type: Number, required: true },
+          emailUser: { type: String, required: true },
+          points: { type: Number, required: true },
         },
       },
     ],
     default: [],
     _id: false,
-  }
+  },
 });
 
 mongoose.set("strictQuery", false);
