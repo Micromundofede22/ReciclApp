@@ -1,7 +1,6 @@
 import AppRouter from "./app.router.js";
 import passport from "passport";
 import { passportCall } from "../middleware/passportCall.js";
-import { uploader } from "../middleware/multer.js";
 import {
   register,
   failRegister,
@@ -9,8 +8,7 @@ import {
   failLogin,
   getGoogle,
   googleCallback,
-  logout,
-  editProfile,
+  logout
 } from "../controllers/session.controller.js";
 
 
@@ -62,8 +60,7 @@ export default class SessionRouter extends AppRouter {
     this.get("/logout", passportCall("jwt"), logout);
 
 
-    //editar perfil y contraseñas
-    this.put("/:emailUser/edit-profile",passportCall("jwt"), uploader.single("addres"), editProfile );
+    
 
 
 

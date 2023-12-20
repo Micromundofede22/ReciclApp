@@ -11,7 +11,8 @@ import {
     createCollector,
     onCollector,
     offCollector,
-    uploadDocuments
+    uploadDocuments,
+    editAddres
 } from "../controllers/accounts.controller.js";
 
 export default class AccountsRouter extends AppRouter{
@@ -38,5 +39,8 @@ export default class AccountsRouter extends AppRouter{
 
         //alta accounts, subiendo documentos identidad y addres
         this.put("/:uid/upload-documents",uploader.fields([{name: "dni"},{name: "addres"}]), uploadDocuments);
+
+        //editar perfil y contraseñas
+    this.put("/:emailUser/edit-profile", uploader.single("addres"), editAddres );
     };
 };

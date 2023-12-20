@@ -42,45 +42,6 @@ export const logout = (req, res) => {
   }
 };
 
-export const editProfile = async (req, res) => {
-  try {
-    const infoToken= req.user.tokenInfo;
-    const emailUser = req.params.emailUser;
 
-    if(infoToken.email != emailUser) return res.unauthorized("No autorizado");
-
-    const user = await UserService.getEmail({ email: emailUser });
-    const collector= await CollectorService.getOne({email: emailUser});
-    if(!user && !collector) return res.sendRequestError("Petición incorrecta");
-
-    const data= req.body; //datos json
-    const file = req.file; //archivo multer single
-    console.log(data)
-
-    if (user) {
-    const userID = user._id.toString();
-
-    user.documents.forEach(item => {
-      if(item.name.includes("addres")){ //reemplazo el archivo viejo del servicio addres
-        item.name= file.filename;
-        item.reference= file.path;
-      }
-    });
-      await UserService.update(userID, {
-        street: data.street,
-        height: data.height,
-      documents: user.documents});
-      return res.sendSuccess("Dirección actualizada");
-    }
-     if(collector){
-        const collectorID= collector._id.toString();
-        await CollectorService.update({_id: collectorID}, newAddres);
-        return res.sendSuccess("Dirección actualizada");
-     }
-     
-  } catch (error) {
-    res.sendServerError(error.message);
-  }
-};
 
 
