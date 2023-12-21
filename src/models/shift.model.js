@@ -10,11 +10,26 @@ const shiftsSchema= new mongoose.Schema({
     height: {type: Number, required:true},             //altura-número
     emailUser:{type: String, required: true},          //email usuario
     recyclingNumber: {type: Number, required: true},   //número de reciclaje del usuario
-    productsToRecycle: {type: [{      //meter productstorecycled
-        
-    }]},
     points: {type:Number, required:true},              //puntos acumulados por habilitar
-    activatedPoints: {type:Boolean, default: false}    //puntos habilitados true or false
+    activatedPoints: {type:Boolean, default: false},    //puntos habilitados true or false
+    productsToRecycled: {
+        carton: {
+          quantity: { type: Number, default: 0 },
+          points: { type: Number, default: 0 },
+        },
+        latas: {
+          quantity: { type: Number, default: 0 },
+          points: { type: Number, default: 0 },
+        },
+        botellasVidrio: {
+          quantity: { type: Number, default: 0 },
+          points: { type: Number, default: 0 },
+        },
+        botellasPlastico: {
+          quantity: { type: Number, default: 0 },
+          points: { type: Number, default: 0 },
+        },
+      },
 
 });
 

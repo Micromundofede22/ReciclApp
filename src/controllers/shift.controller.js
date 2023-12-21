@@ -31,10 +31,25 @@ export const getByIdShift = async (req, res) => {
 export const createShift = async (req, res) => {
   try {
     const user = req.user.tokenInfo;
-    if(user.status === "inactive") return res.unauthorized("Su cuenta está inactiva aún. Cargue los documentos requeridos para activarla");
-    const data = req.body;
-    //turno en collecion turnos no confirmados
+    const swid = req.params.swid;
+    if (user.shiftsWallet.toString() != swid)
+      return res.unauthorized("No autorizado");
+    if (user.status === "inactive")
+      return res.unauthorized(
+        "Su cuenta está inactiva aún. Cargue los documentos requeridos para activarla"
+      );
 
+    const data = req.body;
+    const shiftsWallet = await ShiftsWalletService.getById(swid);
+
+    let totalPoints= 0;
+        for (const key in shiftsWallet.productsToRecycled) {
+         totalPoints= totalPoints + shiftsWallet.productsToRecycled[key].points 
+        };
+
+    if(totalPoints === 0) return res.sendRequestError("Usted no tiene productos agregados para reciclar");
+
+    //turno en collecion turnos no confirmados
     const result = await ShiftsService.create({
       date: data.date,
       hour: data.hour,
@@ -42,22 +57,24 @@ export const createShift = async (req, res) => {
       height: user.height,
       emailUser: user.email,
       recyclingNumber: user.recyclingNumber,
-      points: data.points,
+      productsToRecycled: shiftsWallet.productsToRecycled,
+      points: totalPoints,
     });
+    
     if (!result)
       return res.sendRequestError("Petición incorrecta, turno no agendado");
 
     //ingreso el turno en la billetera turnos del user
-    const shiftsWalletIDUser = user.shiftsWallet.toString();
-    const shiftsWalletUser = await ShiftsWalletService.getById(
-      shiftsWalletIDUser
-    );
     const shift = { _id: result._id };
-    shiftsWalletUser.shiftsNotConfirmed.push({ shift: shift });
-    await ShiftsWalletService.update(
-      { _id: shiftsWalletIDUser },
-      shiftsWalletUser
-    );
+    shiftsWallet.shiftsNotConfirmed.push({ shift: shift });
+
+    //borro los productos a reciclar de la sección productToRecycled de la shiftsWallet
+    for (const clave in shiftsWallet.productsToRecycled) {
+      shiftsWallet.productsToRecycled[clave].quantity = 0;
+      shiftsWallet.productsToRecycled[clave].points = 0;
+    }
+
+    await ShiftsWalletService.update({ _id: swid }, shiftsWallet);
 
     res.sendSuccess(result);
   } catch (error) {
@@ -65,48 +82,52 @@ export const createShift = async (req, res) => {
   }
 };
 
-export const updateShiftConfirmedAdminCol= async(req,res)=>{
-    try {
-      const sid= req.params.sid;
-      const emailCollector= req.body.emailCollector;
-      const shift= await ShiftsService.getById(sid);
-      const emailUser= shift.emailUser;
-      const collector= await CollectorService.getOne({email:emailCollector});
-      const user= await UserService.getEmail({email:emailUser});
-      const swCollector_id= collector.shiftsWallet.toString();
-      const shiftsWalletCollector= await ShiftsWalletService.getById(swCollector_id);
-      const swUser_id= user.shiftsWallet.toString();
-      const shiftsWalletUser= await ShiftsWalletService.getById(swUser_id);
+export const updateShiftConfirmedAdminCol = async (req, res) => {
+  try {
+    const sid = req.params.sid;
+    const emailCollector = req.body.emailCollector;
+    const shift = await ShiftsService.getById(sid);
+    const emailUser = shift.emailUser;
+    const collector = await CollectorService.getOne({ email: emailCollector });
+    const user = await UserService.getEmail({ email: emailUser });
+    const swCollector_id = collector.shiftsWallet.toString();
+    const shiftsWalletCollector = await ShiftsWalletService.getById(
+      swCollector_id
+    );
+    const swUser_id = user.shiftsWallet.toString();
+    const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
 
-      const shiftConfirmed={
-        _id: shift._id,
-        state: "confirmed",
-        collector: `${collector.first_name} ${collector.last_name}`,
-        emailCollector: collector.email,
-        collectionNumberCollector: collector.collectionNumber,
-        done: false,
-        date: shift.date,
-        hour: shift.hour,
-        street: shift.street,
-        height:shift.height,
-        emailUser: user.email,
-        recyclingNumber:user.recyclingNumber,
-        points:shift.points,
-        activatedPoints: false
-      };
-
-      shiftsWalletCollector.shiftsConfirmed.push({shift: shiftConfirmed});
-      shiftsWalletUser.shiftsConfirmed.push({shift: shiftConfirmed});
-
-      await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
-      await ShiftsWalletService.update({_id:swCollector_id}, shiftsWalletCollector);
-      await ShiftsService.delete(sid);
-
-      res.sendSuccess("Turno confirmado");
-
-    } catch (error) {
-      res.sendServerError(error.message);
+    const shiftConfirmed = {
+      _id: shift._id,
+      state: "confirmed",
+      collector: `${collector.first_name} ${collector.last_name}`,
+      emailCollector: collector.email,
+      collectionNumberCollector: collector.collectionNumber,
+      done: false,
+      date: shift.date,
+      hour: shift.hour,
+      street: shift.street,
+      height: shift.height,
+      emailUser: user.email,
+      recyclingNumber: user.recyclingNumber,
+      points: shift.points,
+      activatedPoints: false,
     };
+
+    shiftsWalletCollector.shiftsConfirmed.push({ shift: shiftConfirmed });
+    shiftsWalletUser.shiftsConfirmed.push({ shift: shiftConfirmed });
+
+    await ShiftsWalletService.update({ _id: swUser_id }, shiftsWalletUser);
+    await ShiftsWalletService.update(
+      { _id: swCollector_id },
+      shiftsWalletCollector
+    );
+    await ShiftsService.delete(sid);
+
+    res.sendSuccess("Turno confirmado");
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
 };
 
 export const updateShiftConfirmed = async (req, res) => {
@@ -366,16 +387,19 @@ export const updateReAsignCollector = async (req, res) => {
 
     shiftsWalletAdminCollector.shiftsCanceled.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
-       
         //data user
         const emailUser = item.shift.emailUser;
-        const user = await UserService.getEmail({email:emailUser});
+        const user = await UserService.getEmail({ email: emailUser });
         const swUser_id = user.shiftsWallet.toString();
         const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
         //data collector
-        const newCollector= await CollectorService.getOne({email: emailNewCollector});
-        const swCollector_id= newCollector.shiftsWallet.toString();
-        const shiftsWalletCollector= await ShiftsWalletService.getById(swCollector_id);
+        const newCollector = await CollectorService.getOne({
+          email: emailNewCollector,
+        });
+        const swCollector_id = newCollector.shiftsWallet.toString();
+        const shiftsWalletCollector = await ShiftsWalletService.getById(
+          swCollector_id
+        );
 
         const shiftReAsign = {
           _id: item.shift._id.toString(),
@@ -394,23 +418,26 @@ export const updateReAsignCollector = async (req, res) => {
         };
 
         shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign }); //pusheo el turno reasignado en confirmed
-        shiftsWalletUser.shiftsCanceled.forEach((item,index)=>{ //elimino el turno cancelado 
-          if(item.shift._id === scid){
+        shiftsWalletUser.shiftsCanceled.forEach((item, index) => {
+          //elimino el turno cancelado
+          if (item.shift._id === scid) {
             shiftsWalletUser.shiftsCanceled.splice(index, 1);
           }
-        })
-        shiftsWalletCollector.shiftsConfirmed.push({shift: shiftReAsign});
-        await ShiftsWalletService.update({_id:swUser_id}, shiftsWalletUser);
-        await ShiftsWalletService.update({_id:swCollector_id}, shiftsWalletCollector);
+        });
+        shiftsWalletCollector.shiftsConfirmed.push({ shift: shiftReAsign });
+        await ShiftsWalletService.update({ _id: swUser_id }, shiftsWalletUser);
+        await ShiftsWalletService.update(
+          { _id: swCollector_id },
+          shiftsWalletCollector
+        );
 
-       //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector, 
-       //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
-       //debería hacer una shifts wallet exclusiva para admincollector
+        //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector,
+        //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
+        //debería hacer una shifts wallet exclusiva para admincollector
 
         return res.sendSuccess("Turno reasignado");
       }
     });
-
   } catch (error) {
     res.sendServerError(error.message);
   }
