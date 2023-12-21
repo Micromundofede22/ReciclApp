@@ -58,20 +58,20 @@ export const addProductToRecycled= async(req,res) => {
         const product= await RecycledProductsService.getById(pid);
 
         if(product.category=== "carton"){
-            shiftsWallet.productsToRecycled.carton.quantity= product.quantity;
-            shiftsWallet.productsToRecycled.carton.points= product.points;
+            shiftsWallet.productsToRecycled.carton.quantity=shiftsWallet.productsToRecycled.carton.quantity + product.quantity;
+            shiftsWallet.productsToRecycled.carton.points=  shiftsWallet.productsToRecycled.carton.points + product.points;
         }
         if(product.category=== "latas"){
-            shiftsWallet.productsToRecycled.carton.quantity= product.quantity;
-            shiftsWallet.productsToRecycled.carton.points= product.points;
+            shiftsWallet.productsToRecycled.latas.quantity=  shiftsWallet.productsToRecycled.latas.quantity + product.quantity;
+            shiftsWallet.productsToRecycled.latas.points=  shiftsWallet.productsToRecycled.latas.points + product.points;
         }
         if(product.category=== "botellasVidrio"){
-            shiftsWallet.productsToRecycled.carton.quantity= product.quantity;
-            shiftsWallet.productsToRecycled.carton.points= product.points;
+            shiftsWallet.productsToRecycled.botellasVidrio.quantity=  shiftsWallet.productsToRecycled.botellasVidrio.quantity + product.quantity;
+            shiftsWallet.productsToRecycled.botellasVidrio.points= shiftsWallet.productsToRecycled.botellasVidrio.points + product.points;
         }
         if(product.category=== "botellasPlastico"){
-            shiftsWallet.productsToRecycled.carton.quantity= product.quantity;
-            shiftsWallet.productsToRecycled.carton.points= product.points;
+            shiftsWallet.productsToRecycled.botellasPlastico.quantity=  shiftsWallet.productsToRecycled.botellasPlastico.quantity + product.quantity;
+            shiftsWallet.productsToRecycled.botellasPlastico.points=  shiftsWallet.productsToRecycled.botellasPlastico.points + product.points;
         }
 
         const result= await ShiftsWalletService.update(swid, {productsToRecycled: shiftsWallet.productsToRecycled});
