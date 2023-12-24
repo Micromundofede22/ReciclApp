@@ -45,7 +45,7 @@ export default class ShiftRouter extends AppRouter {
 
     this.delete("/:scid/cancel-collector",handlePolicies(["COLLECTOR"]), cancelCollectorShift); //cancela el colector
 
-    this.delete("/:cid/cancel/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),cancelAdminCollectorShift );
+    this.delete("/:cid/cancel/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),cancelAdminCollectorShift ); //cid= collector id
     
 
 

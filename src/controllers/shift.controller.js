@@ -60,7 +60,7 @@ export const createShift = async (req, res) => {
       productsToRecycled: shiftsWallet.productsToRecycled,
       points: totalPoints,
     });
-    
+
     if (!result)
       return res.sendRequestError("Petición incorrecta, turno no agendado");
 
@@ -68,10 +68,10 @@ export const createShift = async (req, res) => {
     const shift = { _id: result._id };
     shiftsWallet.shiftsNotConfirmed.push({ shift: shift });
 
-    //borro los productos a reciclar de la sección productToRecycled de la shiftsWallet
-    for (const clave in shiftsWallet.productsToRecycled) {
-      shiftsWallet.productsToRecycled[clave].quantity = 0;
-      shiftsWallet.productsToRecycled[clave].points = 0;
+    //borro los productos a reciclar del objeto productToRecycled de la shiftsWallet
+    for (const key in shiftsWallet.productsToRecycled) {
+      shiftsWallet.productsToRecycled[key].quantity = 0;
+      shiftsWallet.productsToRecycled[key].points = 0;
     }
 
     await ShiftsWalletService.update({ _id: swid }, shiftsWallet);
@@ -89,7 +89,11 @@ export const updateShiftConfirmedAdminCol = async (req, res) => {
     const shift = await ShiftsService.getById(sid);
     const emailUser = shift.emailUser;
     const collector = await CollectorService.getOne({ email: emailCollector });
+    if(!collector) return res.sendRequestError("Collector no encontrado");
     const user = await UserService.getEmail({ email: emailUser });
+  if(!user) return res.sendRequestError("User no encontrado");
+
+    //shiftsWallet collector and user
     const swCollector_id = collector.shiftsWallet.toString();
     const shiftsWalletCollector = await ShiftsWalletService.getById(
       swCollector_id
@@ -136,6 +140,7 @@ export const updateShiftConfirmed = async (req, res) => {
     const sid = req.params.sid;
     const collector = req.user.tokenInfo;
     const sw_id = collector.shiftsWallet.toString();
+    if(collector.status === "inactive") return res.sendRequestError("Su cuenta está inactiva. Comuníquese con su administrador asignado.")
 
     const shiftNotConfirmed = await ShiftsService.getById(sid); //turno del usuario
     const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
@@ -392,15 +397,16 @@ export const updateReAsignCollector = async (req, res) => {
         const user = await UserService.getEmail({ email: emailUser });
         const swUser_id = user.shiftsWallet.toString();
         const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
-        //data collector
+        //data nuevo collector
         const newCollector = await CollectorService.getOne({
           email: emailNewCollector,
         });
+        if(!newCollector) return res.sendRequestError("Recolector no encontrado");
         const swCollector_id = newCollector.shiftsWallet.toString();
         const shiftsWalletCollector = await ShiftsWalletService.getById(
           swCollector_id
         );
-
+        //turno reasignado 
         const shiftReAsign = {
           _id: item.shift._id.toString(),
           state: "re-asigned",
@@ -707,6 +713,7 @@ export const cancelCollectorShift = async (req, res) => {
         });
         //cancelo el turno aca en la wallet del collector
         shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
+        //si el collector, cancela más de 5 turnos en una semana, su cuenta se inactiva
         shiftsWalletAdminCollector.shiftsCanceled.push({ shift: item.shift });
         shiftsWalletCollector.shiftsConfirmed.splice(index, 1);
         await ShiftsWalletService.update({ _id: sw_id }, shiftsWalletCollector);
@@ -714,7 +721,10 @@ export const cancelCollectorShift = async (req, res) => {
           //lo mando a la wallet del admincollector para que reasigne collector al shift
           { _id: swAC_id },
           shiftsWalletAdminCollector
-        );
+          );
+       if(shiftsWalletCollector.shiftsCanceled.length > 5){
+        await CollectorService.update({_id: collector._id.toString()}, {status: "inactive"});
+       }
         return res.sendSuccess("Turno cancelado, ya hemos avisado al usuario");
       }
     });
