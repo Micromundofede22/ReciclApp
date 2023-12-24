@@ -146,7 +146,7 @@ export const updateShiftConfirmed = async (req, res) => {
     const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
 
     if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
-
+    console.log("1")
     const shift = {
       _id: shiftNotConfirmed._id.toString(), //solo guardo _id string
       state: "confirmed",
@@ -168,7 +168,7 @@ export const updateShiftConfirmed = async (req, res) => {
       { _id: sw_id },
       shiftsWalletCollector
     );
-
+    console.log("2")
     //USER.ingreso el turno en la wallet
     const user = await UserService.getEmail({
       email: shiftNotConfirmed.emailUser,
@@ -176,6 +176,7 @@ export const updateShiftConfirmed = async (req, res) => {
     const swUser_id = user.shiftsWallet.toString();
     const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
     shiftsWalletUser.shiftsConfirmed.push({ shift: shift });
+    console.log("3")
     shiftsWalletUser.shiftsNotConfirmed.forEach((item, index) => {
       if (item.shift._id.toString() == sid) {
         shiftsWalletUser.shiftsNotConfirmed.splice(index, 1);
@@ -423,13 +424,14 @@ export const updateReAsignCollector = async (req, res) => {
           activatedPoints: false,
         };
 
-        shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign }); //pusheo el turno reasignado en confirmed
-        shiftsWalletUser.shiftsCanceled.forEach((item, index) => {
-          //elimino el turno cancelado
-          if (item.shift._id === scid) {
-            shiftsWalletUser.shiftsCanceled.splice(index, 1);
+        //elimino el turno confirmado por el collector anterior
+        shiftsWalletUser.shiftsConfirmed.forEach((item, index)=>{
+          if(item.shift._id.toString() === scid){
+            shiftsWalletUser.shiftsConfirmed.splice(index, 1);
           }
         });
+        //pusheo el turno reasignado con el nuevo collector
+        shiftsWalletUser.shiftsConfirmed.push({ shift: shiftReAsign }); 
         shiftsWalletCollector.shiftsConfirmed.push({ shift: shiftReAsign });
         await ShiftsWalletService.update({ _id: swUser_id }, shiftsWalletUser);
         await ShiftsWalletService.update(
@@ -437,9 +439,10 @@ export const updateReAsignCollector = async (req, res) => {
           shiftsWalletCollector
         );
 
-        //dejar una marca de que el turno se reasignó, y que quede en la wallet del admincollector,
-        //y a las 5 cancelaciones de un mismo collector, que el admin collector tenga que reasignar, se lo sanciona
-        //debería hacer una shifts wallet exclusiva para admincollector
+        //shifts wallet admin collector
+        shiftsWalletAdminCollector.shiftsConfirmed.push({shift: shiftReAsign});
+        shiftsWalletAdminCollector.shiftsCanceled.splice(index,1);
+        await ShiftsWalletService.update({_id:swAC_id}, shiftsWalletAdminCollector);
 
         return res.sendSuccess("Turno reasignado");
       }
@@ -694,23 +697,7 @@ export const cancelCollectorShift = async (req, res) => {
     shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
         item.shift.state = "cancelled-by-collector";
-        //cancelo el turno en el user
-        const user = await UserService.getEmail({
-          email: item.shift.emailUser,
-        });
-        const swUser_id = user.shiftsWallet.toString();
-        const shiftsWalletUser = await ShiftsWalletService.getById(swUser_id);
-        shiftsWalletUser.shiftsConfirmed.forEach(async (item, index) => {
-          if (item.shift._id.toString() === scid) {
-            item.shift.state = "cancelled-by-collector";
-            shiftsWalletUser.shiftsCanceled.push({ shift: item.shift });
-            shiftsWalletUser.shiftsConfirmed.splice(index, 1);
-            await ShiftsWalletService.update(
-              { _id: swUser_id },
-              shiftsWalletUser
-            );
-          }
-        });
+        
         //cancelo el turno aca en la wallet del collector
         shiftsWalletCollector.shiftsCanceled.push({ shift: item.shift });
         //si el collector, cancela más de 5 turnos en una semana, su cuenta se inactiva
@@ -725,7 +712,7 @@ export const cancelCollectorShift = async (req, res) => {
        if(shiftsWalletCollector.shiftsCanceled.length > 5){
         await CollectorService.update({_id: collector._id.toString()}, {status: "inactive"});
        }
-        return res.sendSuccess("Turno cancelado, ya hemos avisado al usuario");
+        return res.sendSuccess("Turno cancelado. Recuerda que no puedes cancelar más de 5 turnos por mes");
       }
     });
   } catch (error) {
