@@ -3,9 +3,9 @@ import {
   UserService,
   PointsWalletService,
   ShiftsWalletService,
-  CollectorService,
+  CollectorService
 } from "../service/service.js";
-import { createHash, generateToken } from "../utils.js";
+import { createHash, generateToken} from "../utils.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -314,7 +314,7 @@ export const editAddres = async (req, res) => {
 
     const data= req.body; //datos json
     const file = req.file; //archivo multer single
-    console.log(data)
+    // console.log(data)
 
     if (user) {
     const userID = user._id.toString();
@@ -353,3 +353,5 @@ export const editAddres = async (req, res) => {
     res.sendServerError(error.message);
   }
 };
+
+

@@ -8,7 +8,10 @@ import {
   failLogin,
   getGoogle,
   googleCallback,
-  logout
+  logout,
+  forgetPassword,
+  verifyToken,
+  resetPassword
 } from "../controllers/session.controller.js";
 
 
@@ -60,12 +63,12 @@ export default class SessionRouter extends AppRouter {
     this.get("/logout", passportCall("jwt"), logout);
 
 
-    
+     //editar contraseña
+     this.post("/forget-password", forgetPassword);
 
-
-
-
-
+     this.get("/verify-token/:token", verifyToken);
+ 
+     this.put("reset-password/:user", resetPassword);
 
   }
 }

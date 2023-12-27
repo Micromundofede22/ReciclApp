@@ -10,6 +10,8 @@ import ShiftsWalletDAO from "../dao/shiftsWallet.mongo.js";
 import ShiftsWalletRepositorie from "../repositories/shiftsWallet.repositorie.js";
 import CollectorDao from "../dao/collector.mongo.js";
 import CollectorRepositorie from "../repositories/collector.repositorie.js";
+import PasswordMongoDAO from "../dao/password.mongo.js";
+import PasswordRepositorie from "../repositories/password.repositorie.js";
 
 export const UserService= new UsersRepositorie(new UserMongoDAO());
 
@@ -22,5 +24,7 @@ export const ShiftsService= new ShiftsRepositories(new ShiftsMongoDao());
 export const ShiftsWalletService= new ShiftsWalletRepositorie(new ShiftsWalletDAO());
 
 export const CollectorService= new CollectorRepositorie(new CollectorDao());
+
+export const PasswordService= new PasswordRepositorie(new PasswordMongoDAO());
 
 

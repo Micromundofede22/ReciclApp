@@ -19,3 +19,7 @@ export const GOOGLE_CLIENT_ID= process.env.GOOGLECLIENTID;
 export const GOOGLE_CLIENT_SECRET= process.env.GOOGLECLIENTSECRET;
 export const GOOGLE_CALLBACK_URL= process.env.GOOGLECALLBACKURL;
 
+//nodemailer
+export const NODEMAILER_USER= process.env.NODEMAILER_USER;
+export const NODEMAILER_PASS= process.env.NODEMAILER_PASS;
+

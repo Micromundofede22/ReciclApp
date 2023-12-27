@@ -29,6 +29,15 @@ export const extractCookie = req => {
     return (req && req.cookies) ? req.cookies[SIGNED_COOKIE_NAME] : null;
 };
 
+//genera string random
+export const generateRandomString= (num)=>{
+    return [...Array(num)].map(()=>{
+        const randomNum= ~~(Math.random()* 36);
+        return randomNum.toString(36)
+    })
+    .join("")
+    .toUpperCase();
+};
 
 
 
