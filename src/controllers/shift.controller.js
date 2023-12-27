@@ -484,8 +484,8 @@ export const updateReAsignCollector = async (req, res) => {
               shiftsWalletUser.shiftsConfirmed.splice(index, 1);
             }
           });
-          await ShiftsWalletService.update({_id: user._id.toString()}, shiftsWalletUser);
-          
+          await ShiftsWalletService.update({_id: user.shiftsWallet.toString()}, shiftsWalletUser);
+
           return res.sendSuccess("Turno cancelado");
         };
       };
