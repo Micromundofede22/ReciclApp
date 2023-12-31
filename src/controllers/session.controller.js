@@ -1,5 +1,5 @@
 import { SIGNED_COOKIE_NAME } from "../config/config.js";
-import { PasswordService, UserService } from "../service/service.js";
+import { CollectorService, PasswordService, UserService } from "../service/service.js";
 import { sendEmailRestPassword } from "../service/nodemailer.js";
 import { createHash, generateRandomString, isValidpassword } from "../utils.js";
 
@@ -34,6 +34,26 @@ export const googleCallback = (req, res) => {
     .sendSuccess("Logueado google");
 };
 
+//verificacion cuenta
+export const getVerifyUser = async (req, res) => {
+  try {
+      const user = await UserService.getEmail({ email: req.params.user });
+      const collector= await CollectorService.getOne({email:req.params.user});
+      if (!user && !collector) return res.unauthorized("El usuario no esta registrado en nuestra base de datos. Debe registrarse primero");
+
+      if(user){
+        await UserService.updateUser(user._id, { verifiedAccount: "VERIFIED" });
+        // return res.render("sessions/userVerified", { userVerified });
+        return res.sendSuccess("Cuenta verificada, ya puede iniciar sesión.");
+      };
+      if(collector){
+        await CollectorService.updateUser(collector._id, { verifiedAccount: "VERIFIED" });
+        return res.sendSuccess("Cuenta verificada, ya puede iniciar sesión.");
+      };
+  } catch (error) {
+      res.sendServerError(error.message);
+  }
+};
 //logout
 export const logout = (req, res) => {
   try {
@@ -48,7 +68,8 @@ export const forgetPassword= async(req,res) =>{
   try {
     const email= req.body.email;
     const user= await UserService.getEmail({email:email});
-    if(!user) return res.sendRequestError("Petición incorrecta");
+    const collector= await CollectorService.getOne({email:email});
+    if(!user && !collector) return res.sendRequestError("Petición incorrecta");
     //genero un token en db
     const token= generateRandomString(16);
     await PasswordService.create({email, token});
@@ -64,7 +85,8 @@ export const verifyToken= async(req,res) => {
     const tokenParams= req.params.token;
     const token= await PasswordService.getOne({token: tokenParams});
     if(!token) return res.sendRequestError("El token caducó, vuelva a solicitar cambio de contraseña.");
-    res.redirect(`/api/session/reset-password/${token.email}`)
+    // res.redirect(`/api/session/reset-password/${token.email}`)
+    res.sendSuccess("token verificado"); //redirigir a una vista para cambiar contraseña
 
   } catch (error) {
     res.sendServerError(error.message);
@@ -73,16 +95,25 @@ export const verifyToken= async(req,res) => {
 
 export const resetPassword= async(req,res) => {
   try {
-    const newPassword= req.body.password;
+    const newPassword= req.body.password.toString();
     const user= await UserService.getEmail({email: req.params.user});
-    if(isValidpassword(user, newPassword)) return res.sendRequestError("Petición incorrecta");
-    await UserService.update(user._id, {password: createHash(newPassword) });
-    await PasswordService.delete({email: user.email})
-    res.sendSuccess("Contraseña cambiada");
+    const collector= await CollectorService.getOne({email:req.params.user});
+
+    if(isValidpassword(user, newPassword) && isValidpassword(collector, newPassword) ) return res.sendRequestError("Petición incorrecta-");
+    if(user){
+      await UserService.update({_id: user._id}, {password: createHash(newPassword)});
+      await PasswordService.delete({email: req.params.user});
+      res.sendSuccess("Contraseña cambiada");
+    }
+    if(collector){
+      await CollectorService.update({_id: collector._id}, {password: createHash(newPassword)});
+      await PasswordService.delete({email: req.params.user});
+      res.sendSuccess("Contraseña cambiada");
+    }
   } catch (error) {
     res.sendServerError(error.message);
-  }
-}
+  };
+};
 
 
 

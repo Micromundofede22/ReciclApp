@@ -11,7 +11,8 @@ import {
   logout,
   forgetPassword,
   verifyToken,
-  resetPassword
+  resetPassword,
+  getVerifyUser
 } from "../controllers/session.controller.js";
 
 
@@ -62,13 +63,16 @@ export default class SessionRouter extends AppRouter {
 
     this.get("/logout", passportCall("jwt"), logout);
 
+    //validación cuenta
+    this.get("/verify-user/:user", getVerifyUser)
+
 
      //editar contraseña
      this.post("/forget-password", forgetPassword);
 
      this.get("/verify-token/:token", verifyToken);
  
-     this.put("reset-password/:user", resetPassword);
+     this.put("/reset-password/:user", resetPassword);
 
   }
 }

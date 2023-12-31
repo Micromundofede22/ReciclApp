@@ -20,6 +20,7 @@ import {
   GOOGLE_CALLBACK_URL,
   JWT_PRIVATE_KEY,
 } from "../config/config.js";
+import { sendEmailValidation } from "../service/nodemailer.js";
 
 
 const LocalStrategy = local.Strategy;
@@ -75,6 +76,7 @@ const initializePassport = () => {
             };
             // console.log("newCollector:", newCollector);
             const result = await CollectorService.create(newCollector);
+            sendEmailValidation(email, first_name);
             return done(null, result);
           }
 
@@ -105,6 +107,7 @@ const initializePassport = () => {
           };
           // console.log(newUser);
           const result = await UserService.create(newUser);
+          sendEmailValidation(email, first_name);
           return done(null, result);
         } catch (error) {}
       }
@@ -128,6 +131,10 @@ const initializePassport = () => {
           
           if(user){
             if (!isValidpassword(user, password)) return done(null, false);
+            if(user.status === "inactive"){
+              console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
+              return done(null,false);
+            } 
             const token = generateToken(user);
             user.token = token;
             done(null, user);
@@ -135,6 +142,10 @@ const initializePassport = () => {
 
           if (collector) {
             if (!isValidpassword(collector,password )) return done(null, false);
+            if(collector.status === "inactive"){
+              console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
+              return done(null,false);
+            } 
             const token = generateToken(collector);
             collector.token = token;
             done(null, collector);
