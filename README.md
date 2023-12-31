@@ -7,6 +7,10 @@ Nuestra app (back-end) cuenta con una logística que hace posible la recolecció
 Es tan fácil como sacar un turno, y un recolector confirmará día y horario. Una vez terminado el procedimiento, los usuarios recibirán puntos en su Points Wallet, los cuales podrán canjear por beneficios en descuentos en locales o servicios adheridos a esta red de reciclado por el planeta.
 
 
+## Tech Stack
+
+**Server:** Node, Express
+
 ## 🚀 About Me
 Soy un desarrollador full stack, con preferencias por el back-end. Mi objetivo a largo plazo, fusionar mi pasión por la psicología, filosofía y medio ambiente, con la tecnología.  
 
