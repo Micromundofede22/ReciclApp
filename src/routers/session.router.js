@@ -66,7 +66,6 @@ export default class SessionRouter extends AppRouter {
     //validación cuenta
     this.get("/verify-user/:user", getVerifyUser)
 
-
      //editar contraseña
      this.post("/forget-password", forgetPassword);
 
