@@ -42,7 +42,7 @@ export const getVerifyUser = async (req, res) => {
       if (!user && !collector) return res.unauthorized("El usuario no esta registrado en nuestra base de datos. Debe registrarse primero");
 
       if(user){
-        await UserService.updateUser(user._id, { verifiedAccount: "VERIFIED" });
+        await UserService.update(user._id, { verifiedAccount: "VERIFIED" });
         // return res.render("sessions/userVerified", { userVerified });
         return res.sendSuccess("Cuenta verificada, ya puede iniciar sesión.");
       };

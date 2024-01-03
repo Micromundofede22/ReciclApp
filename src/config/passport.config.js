@@ -131,7 +131,7 @@ const initializePassport = () => {
           
           if(user){
             if (!isValidpassword(user, password)) return done(null, false);
-            if(user.status === "inactive"){
+            if(user.verifiedAccount === "inactive"){
               console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
               return done(null,false);
             } 
@@ -142,7 +142,7 @@ const initializePassport = () => {
 
           if (collector) {
             if (!isValidpassword(collector,password )) return done(null, false);
-            if(collector.status === "inactive"){
+            if(collector.verifiedAccount === "inactive"){
               console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
               return done(null,false);
             } 

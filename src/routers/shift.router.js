@@ -13,7 +13,7 @@ import {
   finalizedProcess,
   cancelShift,
   cancelCollectorShift,
-  cancelAdminCollectorShift
+  invalidAdminCollectorShift
 } from "../controllers/shift.controller.js";
 import { handlePolicies } from "../middleware/authentication.js";
 
@@ -45,7 +45,7 @@ export default class ShiftRouter extends AppRouter {
 
     this.delete("/:scid/cancel-collector",handlePolicies(["COLLECTOR"]), cancelCollectorShift); //cancela el colector
 
-    this.delete("/:cid/cancel/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),cancelAdminCollectorShift ); //cid= collector id
+    this.delete("/:cid/invalid/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),invalidAdminCollectorShift ); //cid= collector id
     
 
 

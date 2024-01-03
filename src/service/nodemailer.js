@@ -19,9 +19,9 @@ export const sendEmailValidation = async (email, first_name) => {
     product: {
       //encabezado
       name: "ReciclApp",
-    //   link: "http://reciclapp.com", //link clikeable a pagina web
-      // logo: "",
-      // logoHeight: "30px"
+      link: "http://reciclapp.com", //link clikeable a pagina web
+      logo: "https://github.com/Micromundofede22/ReciclApp/blob/main/src/public/logo-reciclapp.jpeg",
+      logoHeight: "30px"
     },
   });
   let content = {

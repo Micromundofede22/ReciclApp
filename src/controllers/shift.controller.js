@@ -342,7 +342,7 @@ export const updateShiftReconfirmCollector = async (req, res) => {
         if (data === false) {
           //data admincollector(allí se manda el turno cancelado por collector, asi se le reasigna un nuevo collector al user)
           const emailAdminCollector = collector.adminCollector;
-          const adminCollector = await CollectorService.getOne({
+          const adminCollector = await UserService.getEmail({
             email: emailAdminCollector,
           });
           const swAC_id = adminCollector.shiftsWallet.toString();
@@ -729,7 +729,7 @@ export const cancelCollectorShift = async (req, res) => {
 
     //data admincollector
     const emailAdminCollector = collector.adminCollector;
-    const adminCollector = await CollectorService.getOne({
+    const adminCollector = await UserService.getEmail({
       email: emailAdminCollector,
     });
     const swAC_id = adminCollector.shiftsWallet.toString();
@@ -768,7 +768,7 @@ export const cancelCollectorShift = async (req, res) => {
   }
 };
 
-export const cancelAdminCollectorShift = async (req, res) => {
+export const invalidAdminCollectorShift = async (req, res) => {
   try {
     const cid = req.params.cid; //collector id
     const scid = req.params.scid;

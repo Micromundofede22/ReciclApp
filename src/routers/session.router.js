@@ -73,5 +73,5 @@ export default class SessionRouter extends AppRouter {
  
      this.put("/reset-password/:user", resetPassword);
 
-  }
-}
+  };
+};
