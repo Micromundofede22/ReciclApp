@@ -47,7 +47,5 @@ export default class ShiftRouter extends AppRouter {
 
     this.delete("/:cid/invalid/:scid/admin-collector",handlePolicies(["ADMINCOLLECTOR"]),invalidAdminCollectorShift ); //cid= collector id
     
-
-
-  }
-}
+  };
+};
