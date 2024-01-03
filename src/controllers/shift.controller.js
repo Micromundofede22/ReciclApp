@@ -484,11 +484,14 @@ export const updateReAsignCollector = async (req, res) => {
               shiftsWalletUser.shiftsConfirmed.splice(index, 1);
             }
           });
-          await ShiftsWalletService.update({_id: user.shiftsWallet.toString()}, shiftsWalletUser);
+          await ShiftsWalletService.update(
+            { _id: user.shiftsWallet.toString() },
+            shiftsWalletUser
+          );
 
           return res.sendSuccess("Turno cancelado");
-        };
-      };
+        }
+      }
     });
   } catch (error) {
     res.sendServerError(error.message);
@@ -501,14 +504,17 @@ export const updateDoneShift = async (req, res) => {
     const done = req.body.done; //(true)
     const editKG = req.body.kg; //para editar points del user
     const collector = req.user.tokenInfo;
-    const shiftsWalletID = collector.shiftsWallet.toString();
+    const sw_collectorID = collector.shiftsWallet.toString();
 
     //tengo que traer la billetera de turnos, y allí dentro buscar este turno y modificarlo
-    const shiftsWallet = await ShiftsWalletService.getById(shiftsWalletID);
+    const shiftsWalletCollector = await ShiftsWalletService.getById(
+      sw_collectorID
+    );
 
-    if (!shiftsWallet) return res.sendRequestError("Petición incorrecta");
+    if (!shiftsWalletCollector)
+      return res.sendRequestError("Petición incorrecta");
 
-    await shiftsWallet.shiftsConfirmed.map(async (item) => {
+    await shiftsWalletCollector.shiftsConfirmed.forEach(async (item) => {
       //si collector modifica kg por body
       if (
         item.shift._id == scid &&
@@ -530,8 +536,8 @@ export const updateDoneShift = async (req, res) => {
       const user = await UserService.getEmail({
         email: item.shift.emailUser,
       });
-      const pointsWalletID = user.pointsWallet.toString();
-      await PointsWalletService.update(pointsWalletID, {
+      const pw_UserId = user.pointsWallet.toString();
+      await PointsWalletService.update(pw_UserId, {
         notEnabledPoints: item.shift.points,
       });
 
@@ -540,18 +546,33 @@ export const updateDoneShift = async (req, res) => {
         { _id: user._id.toString() },
         { recyclingNumber: user.recyclingNumber + 1 }
       );
+
+      //actualizo shifts wallet user: done:true
+      const sw_UserId = user.shiftsWallet.toString();
+      const shiftsWalletUser = await ShiftsWalletService.getById(sw_UserId);
+
+      shiftsWalletUser.shiftsConfirmed.forEach(async (item) => {
+        if (item.shift._id == scid && editKG) {
+          item.shift.done = done;
+          item.shift.points = editKG;
+        }
+        if (item.shift._id == scid && !editKG) {
+          item.shift.done = done;
+        }
+      });
+      await ShiftsWalletService.update(sw_UserId, shiftsWalletUser);
     });
 
-    //actualizo billetera turnos con los turnos done:true
+    //actualizo shifts wallet collector con los turnos done:true
     const result = await ShiftsWalletService.update(
-      shiftsWalletID,
-      shiftsWallet
+      sw_collectorID,
+      shiftsWalletCollector
     );
     //actualizo recolector, nro de recolecciones, añadiendole 1(recién finalizada)
     const collectorDB = await CollectorService.getById(
       collector._id.toString()
-    ); //collector database
-    // console.log(collectorDB);
+    );
+
     await CollectorService.update(
       { _id: collector._id.toString() },
       { collectionNumber: collectorDB.collectionNumber + 1 }
