@@ -18,7 +18,8 @@ const collectorSchema = new mongoose.Schema({
   shiftsWallet: { type: mongoose.Schema.Types.ObjectId, ref: "shifts-wallet" }, //billetera de turnos
   pointsWallet: {type: mongoose.Schema.Types.ObjectId , ref: "pointsWallet"},   //billetera puntos
   collectionNumber:{type: Number, default:1},
-  adminCollector: {type: String, required: true},  
+  adminCollector: {type: String, required: true},
+  last_conection: {type:Date, default: Date.now, required: true},  
   documents: {
     type: [
       {

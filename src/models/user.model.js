@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { now } from "mongoose";
 
 const userSchema = new mongoose.Schema({
   first_name: { type: String, required: true },
@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   recyclingNumber: { type: Number, required: true, default: 1 },
   service: { type: String, required: false },
   imageProfile: { type: String, required: false },
+  last_conection: {type: Date, default: Date.now, required: true},
   documents: {
     type: [
       {

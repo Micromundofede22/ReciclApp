@@ -21,6 +21,7 @@ import {
   JWT_PRIVATE_KEY,
 } from "../config/config.js";
 import { sendEmailValidation } from "../service/nodemailer.js";
+import dayjs from "dayjs";
 
 
 const LocalStrategy = local.Strategy;
@@ -135,7 +136,7 @@ const initializePassport = () => {
               console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
               return done(null,false);
             } 
-            
+            await UserService.update(user._id, {last_conection: dayjs()});
             const token = generateToken(user);
             user.token = token;
             done(null, user);
@@ -146,7 +147,8 @@ const initializePassport = () => {
             if(collector.verifiedAccount === "inactive"){
               console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
               return done(null,false);
-            } 
+            };
+            await CollectorService.update(collector._id, {last_conection: dayjs()});
             const token = generateToken(collector);
             collector.token = token;
             done(null, collector);

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { SIGNED_COOKIE_NAME } from "../config/config.js";
 import {
   UserService,
@@ -354,4 +355,44 @@ export const editAddres = async (req, res) => {
   }
 };
 
+export const inactiveUsersLastConection= async(req, res) => {
+  try {
+      const users= await UserService.get();
+
+      users.forEach(async(item)=>{
+        const date1= dayjs(item.last_conection).format('DD/MM/YYYY') ;
+        const diff= date1.diff(dayjs().format('DD/MM/YYYY'), 'month');
+        const usersOffline= 0;
+
+        if( diff >= 12){
+          await UserService.update(item._id, {status: "inactive"});
+          usersOffline + 1
+        };
+      });
+
+      res.sendSuccess(`Se han inactivado un total de ${usersOffline} cuentas`);
+  } catch (error) {
+    res.sendServerError(error.message);
+  }
+}
+
+export const inactiveCollectorLastConection = async(req,res) =>{
+  try {
+   
+      const collectors= await CollectorService.get();
+      collectors.forEach(async(item)=>{
+        const date1= dayjs(item.last_conection).format('DD/MM/YYYY') ;
+        const diff= date1.diff(dayjs().format('DD/MM/YYYY'), 'month');
+        const collectorOffline= 0;
+
+        if( diff >= 12){
+          await UserService.update(item._id, {status: "inactive"});
+          collectorOffline + 1;
+        };
+      });
+      res.sendSuccess(`Se han inactivado un total de ${usersOffline} cuentas`);
+  } catch (error) {
+    res.sendServerError(error.message);
+  };
+};
 

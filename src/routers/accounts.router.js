@@ -12,7 +12,9 @@ import {
   onCollector,
   offCollector,
   uploadDocuments,
-  editAddres
+  editAddres,
+  inactiveUsersLastConection,
+  inactiveCollectorLastConection
 } from "../controllers/accounts.controller.js";
 
 export default class AccountsRouter extends AppRouter {
@@ -35,6 +37,7 @@ export default class AccountsRouter extends AppRouter {
       handlePolicies(["ADMIN"]),
       offAdmincollector
     );
+
     //create user
     this.post("/user", handlePolicies(["ADMINCOLLECTOR"]), createUser); //cuenta status active
     //alta user
@@ -72,6 +75,9 @@ export default class AccountsRouter extends AppRouter {
     //editar perfil (direccion y documento addres)
     this.put("/:emailUser/edit-addres", uploader.single("addres"), editAddres);
 
+    //inactivar cuentas cuyo última conexión fue hace 1 año
+    this.put("/users/offline", inactiveUsersLastConection)
+    this.put("/collectors/offline", inactiveCollectorLastConection)
    
   }
 }
