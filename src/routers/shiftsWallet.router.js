@@ -23,7 +23,5 @@ export default class ShiftsWalletRouter extends AppRouter {
     this.delete("/:swid/delete", handlePolicies(["ADMIN"]), deleteSW); //solo admin
 
     this.post("/:swid/recycled/:pid",  handlePolicies(["USER", "PREMIUM"]), addProductToRecycled);
-  }
-}
-
-//HAY QUE PROBAR TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  };
+};

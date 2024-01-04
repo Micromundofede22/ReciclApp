@@ -135,6 +135,7 @@ const initializePassport = () => {
               console.log("Ingrese a su email para activar su cuenta. Luego inicie sesión");
               return done(null,false);
             } 
+            
             const token = generateToken(user);
             user.token = token;
             done(null, user);

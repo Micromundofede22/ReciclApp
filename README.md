@@ -13,7 +13,7 @@ Es tan fácil como sacar un turno, y un recolector confirmará día y horario. U
 
 ## Demo
 
-https://www.youtube.com/watch?v=mQMf7nbx4is
+https://youtu.be/uwVHo9Z2LQo
 
 
 ## 🚀 About Me
