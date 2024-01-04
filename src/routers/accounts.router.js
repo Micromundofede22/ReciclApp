@@ -76,8 +76,8 @@ export default class AccountsRouter extends AppRouter {
     this.put("/:emailUser/edit-addres", uploader.single("addres"), editAddres);
 
     //inactivar cuentas cuyo última conexión fue hace 1 año
-    this.put("/users/offline", inactiveUsersLastConection)
-    this.put("/collectors/offline", inactiveCollectorLastConection)
+    this.put("/users/offline",handlePolicies(["ADMINCOLLECTOR"]), inactiveUsersLastConection)
+    this.put("/collectors/offline",handlePolicies(["ADMINCOLLECTOR"]), inactiveCollectorLastConection)
    
   }
 }
