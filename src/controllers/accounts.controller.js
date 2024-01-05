@@ -355,7 +355,7 @@ export const editAddres = async (req, res) => {
   }
 };
 
-export const inactiveUsersLastConection= async(req, res) => {
+export const offlineUsersLastConection= async(req, res) => {
   try {
       const users= await UserService.get();
       let usersOffline= 0;
@@ -384,7 +384,7 @@ export const inactiveUsersLastConection= async(req, res) => {
   };
 };
 
-export const inactiveCollectorLastConection = async(req,res) =>{
+export const offlineCollectorLastConection = async(req,res) =>{
   try {
    
       const collectors= await CollectorService.get();
