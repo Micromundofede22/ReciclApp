@@ -27,7 +27,7 @@ export default class SessionRouter extends AppRouter {
       register
     );
 
-    this.get("/failregister", failRegister);
+    this.post("/failregister", failRegister);
 
     //login
     this.post(
