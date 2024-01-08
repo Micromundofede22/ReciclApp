@@ -43,7 +43,12 @@ const initializePassport = () => {
         const { first_name, last_name, street, height, email, age, role,adminCollector } = req.body;
 
         try {
-          //registro de recolectores
+          
+          if(!first_name || !last_name || !street || !height || !email || !age || !role || !adminCollector){
+            return done(null, false);
+          }
+
+          //COLLECTOR
           if (role == "collector") {
             const collector = await CollectorService.getOne({
               email: username,
@@ -81,7 +86,7 @@ const initializePassport = () => {
             return done(null, result);
           }
 
-          //USUARIOS
+          //USERS
           const user = await UserService.getEmail({ email: username });
 
           if (user) {

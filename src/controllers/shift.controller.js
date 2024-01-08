@@ -289,7 +289,9 @@ export const updateShiftReconfirm = async (req, res) => {
           if (item.shift._id.toString() === said) {
             item.shift.state = "reconfirm-pending";
             item.shift.date = data.date;
-            item.shift.hour = data.hour;
+            item.shift.month= data.month;
+            item.shift.year= data.year;
+            item.shift.time= data.time;
           }
         });
         await ShiftsWalletService.update(
@@ -299,7 +301,9 @@ export const updateShiftReconfirm = async (req, res) => {
 
         item.shift.state = "reconfirm-pending";
         item.shift.date = data.date;
-        item.shift.hour = data.hour;
+        item.shift.month= data.month;
+        item.shift.year= data.year;
+        item.shift.time= data.time;
 
         await ShiftsWalletService.update({ _id: swUser_ID }, shiftsWalletUser);
       }
@@ -441,8 +445,11 @@ export const updateReAsignCollector = async (req, res) => {
             collector: `${newCollector.first_name} ${newCollector.last_name}`,
             emailCollector: newCollector.email,
             collectionNumberCollector: newCollector.collectionNumber,
-            date: item.shift.date,
-            hour: item.shift.hour,
+            state : "reconfirm-pending",
+            date : item.shift.date,
+            month: item.shift.month,
+            year: item.shift.year,
+            time: item.shift.time,
             street: item.shift.street,
             height: item.shift.height,
             emailUser: item.shift.emailUser,
@@ -490,8 +497,10 @@ export const updateReAsignCollector = async (req, res) => {
                 shift: {
                   _id: item.shift._id.toString(),
                   emailCollector: item.shift.emailCollector,
-                  date: item.shift.date,
-                  hour: item.shift.hour,
+                  date : item.shift.date,
+                  month: item.shift.month,
+                  year: item.shift.year,
+                  time: item.shift.time,
                   street: item.shift.street,
                   height: item.shift.height,
                   emailUser: item.shift.emailUser,
@@ -701,8 +710,10 @@ export const cancelShift = async (req, res) => {
             shift: {
               _id: shift._id.toString(),
               emailCollector: shift.emailCollector,
-              date: shift.date,
-              hour: shift.hour,
+              date : shift.date,
+              month: shift.month,
+              year: shift.year,
+              time: shift.time,
               street: shift.street,
               height: shift.height,
               emailUser: shift.emailUser,
