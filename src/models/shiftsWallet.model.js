@@ -38,19 +38,37 @@ const shiftsWalletSchema = new mongoose.Schema({
       {
         shift: {
           _id: { type: String },
-          state: { type: String }, // estado, confirmado o pendiente (lo confirma un recoletor)
-          collector: { type: String, required: true }, //recolector asignado
+          state: { type: String }, 
+          collector: { type: String, required: true }, 
           emailCollector: { type: String, required: true },
-          collectionNumberCollector: { type: Number, required: true }, //número de recolecciones del recolector
+          collectionNumberCollector: { type: Number, required: true },
           done: { type: Boolean, required: true, default: false }, //       //cuando retira cartones, pone true
-          date: { type: String, required: true }, //fecha
-          hour: { type: String, required: true }, //hora
-          street: { type: String, required: true }, //calle
-          height: { type: Number, required: true }, //altura-número
-          emailUser: { type: String, required: true }, //usuario
-          recyclingNumber: { type: Number, required: true }, //número de reciclaje del usuario
-          points: { type: Number, required: true }, //puntos acumulados por habilitar
-          activatedPoints: { type: Boolean, default: false }, //puntos habilitados true or false
+          street: { type: String, required: true }, 
+          height: { type: Number, required: true }, 
+          emailUser: { type: String, required: true }, 
+          recyclingNumber: { type: Number, required: true }, 
+          points: { type: Number, required: true }, 
+          activatedPoints: { type: Boolean, default: false },
+          date: {
+            // 01 - 31
+            type: Number,
+            maxlength: 2,
+          },
+          month: {
+            // 00 - 11
+            type: Number,
+            maxlength: 2,
+          },
+          year: {
+            // 2022
+            type: Number,
+            maxlength: 4,
+          },
+          time: {
+            // 09:15
+            type: String,
+            maxlength: 5,
+          }, 
         },
       },
     ],
@@ -66,14 +84,32 @@ const shiftsWalletSchema = new mongoose.Schema({
           collector: { type: String, required: true },
           emailCollector: { type: String, required: true },
           collectionNumberCollector: { type: Number, required: true }, //actualizarlo ya q en done se suma 1
-          done: { type: Boolean, required: true, default: false }, //
-          date: { type: String, required: true },
-          hour: { type: String, required: true },
+          done: { type: Boolean, required: true, default: false }, 
           street: { type: String, required: true },
           height: { type: Number, required: true },
           emailUser: { type: String, required: true },
           recyclingNumber: { type: Number, required: true }, //actualizarlo ya q en dondese suma 1
           points: { type: Number, required: true }, //actualizarlos si se modificó en done con kg
+          date: {
+            // 01 - 31
+            type: Number,
+            maxlength: 2,
+          },
+          month: {
+            // 00 - 11
+            type: Number,
+            maxlength: 2,
+          },
+          year: {
+            // 2022
+            type: Number,
+            maxlength: 4,
+          },
+          time: {
+            // 09:15
+            type: String,
+            maxlength: 5,
+          },
         },
       },
     ],
@@ -86,19 +122,37 @@ const shiftsWalletSchema = new mongoose.Schema({
       {
         shift: {
           _id: { type: String },
-          state: { type: String, default: "absent" }, // estado, confirmado o pendiente (lo confirma un recoletor)
-          collector: { type: String, required: true }, //recolector asignado
+          state: { type: String, default: "absent" }, 
+          collector: { type: String, required: true }, 
           emailCollector: { type: String, required: true },
-          collectionNumberCollector: { type: Number, required: true }, //número de recolecciones del recolector
-          done: { type: Boolean, required: true, default: false }, //       //cuando retira cartones, pone true
-          date: { type: String, required: true }, //fecha
-          hour: { type: String, required: true }, //hora
-          street: { type: String, required: true }, //calle
-          height: { type: Number, required: true }, //altura-número
-          emailUser: { type: String, required: true }, //usuario
-          recyclingNumber: { type: Number, required: true }, //número de reciclaje del usuario
-          points: { type: Number, required: true }, //puntos acumulados por habilitar
-          activatedPoints: { type: Boolean, default: false }, //puntos habilitados true or false
+          collectionNumberCollector: { type: Number, required: true }, 
+          done: { type: Boolean, required: true, default: false }, 
+          street: { type: String, required: true }, 
+          height: { type: Number, required: true }, 
+          emailUser: { type: String, required: true }, 
+          recyclingNumber: { type: Number, required: true }, 
+          points: { type: Number, required: true }, 
+          activatedPoints: { type: Boolean, default: false }, 
+          date: {
+            // 01 - 31
+            type: Number,
+            maxlength: 2,
+          },
+          month: {
+            // 00 - 11
+            type: Number,
+            maxlength: 2,
+          },
+          year: {
+            // 2022
+            type: Number,
+            maxlength: 4,
+          },
+          time: {
+            // 09:15
+            type: String,
+            maxlength: 5,
+          },
         },
       },
     ],
@@ -112,12 +166,30 @@ const shiftsWalletSchema = new mongoose.Schema({
           _id: { type: String },
           state: { type: String, default: "cancelled" },
           emailCollector: { type: String, required: true },
-          date: { type: String, required: true },
-          hour: { type: String, required: true },
           street: { type: String, required: true },
           height: { type: Number, required: true },
           emailUser: { type: String, required: true },
           points: { type: Number, required: true },
+          date: {
+            // 01 - 31
+            type: Number,
+            maxlength: 2,
+          },
+          month: {
+            // 00 - 11
+            type: Number,
+            maxlength: 2,
+          },
+          year: {
+            // 2022
+            type: Number,
+            maxlength: 4,
+          },
+          time: {
+            // 09:15
+            type: String,
+            maxlength: 5,
+          },
         },
       },
     ],

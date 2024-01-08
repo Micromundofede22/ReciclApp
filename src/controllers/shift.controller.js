@@ -52,12 +52,14 @@ export const createShift = async (req, res) => {
         "Usted no tiene productos agregados para reciclar"
       );
 
-    //turno en collecion turnos no confirmados
+    //turno en collecion: turnos no confirmados
     const result = await ShiftsService.create({
-      date: data.date,
-      hour: data.hour,
       street: user.street,
       height: user.height,
+      date: data.date,
+      month: data.month,
+      year: data.year,
+      time: data.time,
       emailUser: user.email,
       recyclingNumber: user.recyclingNumber,
       productsToRecycled: shiftsWallet.productsToRecycled,
@@ -112,7 +114,9 @@ export const updateShiftConfirmedAdminCol = async (req, res) => {
       collectionNumberCollector: collector.collectionNumber,
       done: false,
       date: shift.date,
-      hour: shift.hour,
+      month: shift.month,
+      year: shift.year,
+      time: shift.time,
       street: shift.street,
       height: shift.height,
       emailUser: user.email,
@@ -153,6 +157,17 @@ export const updateShiftConfirmed = async (req, res) => {
 
     if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
 
+    //si año, mes,dia y hora coinciden, NO TOMA EL TURNO
+    const incompatibleShift= shiftsWalletCollector.shiftsConfirmed.find(item=>{
+        if (item.shift.date == shiftNotConfirmed.date &&
+        item.shift.month == shiftNotConfirmed.month &&
+        item.shift.year == shiftNotConfirmed.year &&
+        item.shift.time == shiftNotConfirmed.time ){
+          return item
+        }
+    });
+    if(incompatibleShift) return res.sendRequestError("Usted no puede tomar este turno, ya que ya tiene uno confirmado en el mismo día y horario");
+
     const shift = {
       _id: shiftNotConfirmed._id.toString(), //solo guardo _id string
       state: "confirmed",
@@ -160,7 +175,9 @@ export const updateShiftConfirmed = async (req, res) => {
       emailCollector: collector.email,
       collectionNumberCollector: collector.collectionNumber,
       date: shiftNotConfirmed.date,
-      hour: shiftNotConfirmed.hour,
+      month: shiftNotConfirmed.month,
+      year: shiftNotConfirmed.year,
+      time: shiftNotConfirmed.time,
       street: shiftNotConfirmed.street,
       height: shiftNotConfirmed.height,
       emailUser: shiftNotConfirmed.emailUser,
