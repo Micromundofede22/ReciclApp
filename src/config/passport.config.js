@@ -99,7 +99,6 @@ const initializePassport = () => {
           const user = await UserService.getEmail({ email: username });
 
           if (user) {
-            console.log("usuario ya existe");
             return done(null, false);
           }
           const newPointsWallet = await PointsWalletService.create({});

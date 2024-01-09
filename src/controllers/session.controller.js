@@ -9,7 +9,7 @@ export const register = (req, res) => {
 };
 
 export const failRegister = (req, res) => {
-  res.sendRequestError("Fail register");
+    res.sendError("User ya existe");
 };
 
 //LOGIN
