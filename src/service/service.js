@@ -12,6 +12,8 @@ import CollectorDao from "../dao/collector.mongo.js";
 import CollectorRepositorie from "../repositories/collector.repositorie.js";
 import PasswordMongoDAO from "../dao/password.mongo.js";
 import PasswordRepositorie from "../repositories/password.repositorie.js";
+import TokenVerifyRepositorie from "../repositories/tokenVerify.repositorie.js";
+import TokenVerifyDAO from "../dao/tokenVerify.mongo.js";
 
 export const UserService= new UsersRepositorie(new UserMongoDAO());
 
@@ -26,5 +28,7 @@ export const ShiftsWalletService= new ShiftsWalletRepositorie(new ShiftsWalletDA
 export const CollectorService= new CollectorRepositorie(new CollectorDao());
 
 export const PasswordService= new PasswordRepositorie(new PasswordMongoDAO());
+
+export const TokenVerifyService= new TokenVerifyRepositorie(new TokenVerifyDAO());
 
 

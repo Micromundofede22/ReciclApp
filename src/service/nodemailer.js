@@ -3,7 +3,7 @@ import Mailgen from "mailgen";
 import dayjs from "dayjs";
 import { NODEMAILER_USER, NODEMAILER_PASS } from "../config/config.js";
 
-export const sendEmailValidation = async (email, first_name) => {
+export const sendEmailValidation = async (token,email, first_name) => {
   //ENVÍO DE EMAIL AL REGISTRARSE
   let configNodemailer = {
     service: "gmail",
@@ -33,7 +33,7 @@ export const sendEmailValidation = async (email, first_name) => {
         button: {
           color: "#22BC66",
           text: "Confirme su cuenta",
-          link: `http://localhost:8080/api/session/verify-user/${email}`,
+          link: `http://localhost:8080/api/session/verify-user/${token}`,
         },
       },
       dictionary: {
@@ -53,7 +53,7 @@ export const sendEmailValidation = async (email, first_name) => {
   try {
     await transporter.sendMail(message);
   } catch (error) {
-    logger.error(error);
+    console.log(error);
   }
 };
 

@@ -1,5 +1,5 @@
 import { SIGNED_COOKIE_NAME } from "../config/config.js";
-import { CollectorService, PasswordService, UserService } from "../service/service.js";
+import { CollectorService, PasswordService, TokenVerifyService, UserService } from "../service/service.js";
 import { sendEmailRestPassword } from "../service/nodemailer.js";
 import { createHash, generateRandomString, isValidpassword } from "../utils.js";
 
@@ -37,17 +37,23 @@ export const googleCallback = (req, res) => {
 //verificacion cuenta
 export const getVerifyUser = async (req, res) => {
   try {
-      const user = await UserService.getEmail({ email: req.params.user });
-      const collector= await CollectorService.getOne({email:req.params.user});
-      if (!user && !collector) return res.unauthorized("El usuario no esta registrado en nuestra base de datos. Debe registrarse primero");
+      const token= req.params.token;
+      const tokenDB= await TokenVerifyService.getOne({token: token});
+      if (!tokenDB) return res.unauthorized("Token no válido");
+
+      const emailToken= tokenDB.email;
+      const user= await UserService.getEmail({email:emailToken});
+      const collector= await CollectorService.getOne({email: emailToken});
 
       if(user){
         await UserService.update(user._id, { verifiedAccount: "VERIFIED" });
+        await TokenVerifyService.delete({email:emailToken});
         // return res.render("sessions/userVerified", { userVerified });
         return res.sendSuccess("Cuenta verificada, ya puede iniciar sesión.");
       };
       if(collector){
-        await CollectorService.updateUser(collector._id, { verifiedAccount: "VERIFIED" });
+        await CollectorService.update(collector._id, { verifiedAccount: "VERIFIED" });
+        await TokenVerifyService.delete({email:emailToken});
         return res.sendSuccess("Cuenta verificada, ya puede iniciar sesión.");
       };
   } catch (error) {

@@ -6,6 +6,7 @@ import {
   CollectorService,
   PointsWalletService,
   ShiftsWalletService,
+  TokenVerifyService,
   UserService,
 } from "../service/service.js";
 import {
@@ -13,6 +14,7 @@ import {
   generateToken,
   isValidpassword,
   extractCookie,
+  generateRandomString,
 } from "../utils.js";
 import {
   GOOGLE_CLIENT_ID,
@@ -44,9 +46,16 @@ const initializePassport = () => {
 
         try {
           
-          if(!first_name || !last_name || !street || !height || !email || !age || !role || !adminCollector){
+          if(!first_name || !last_name || !street || !height || !email || !age || !role ){
             return done(null, false);
-          }
+          };
+
+          const token= generateRandomString(10);
+          await TokenVerifyService.create({
+              email: email,
+              token: token
+            });
+
 
           //COLLECTOR
           if (role == "collector") {
@@ -61,7 +70,7 @@ const initializePassport = () => {
 
             const shiftsWallet = await ShiftsWalletService.create({});
             const newPointsWallet = await PointsWalletService.create({});
-
+            
             const newCollector = {
               first_name,
               last_name,
@@ -82,7 +91,7 @@ const initializePassport = () => {
             };
             // console.log("newCollector:", newCollector);
             const result = await CollectorService.create(newCollector);
-            sendEmailValidation(email, first_name);
+            sendEmailValidation(token,email, first_name);
             return done(null, result);
           }
 
@@ -113,7 +122,7 @@ const initializePassport = () => {
           };
           // console.log(newUser);
           const result = await UserService.create(newUser);
-          sendEmailValidation(email, first_name);
+          sendEmailValidation(token,email, first_name);
           return done(null, result);
         } catch (error) {}
       }

@@ -27,7 +27,7 @@ export default class SessionRouter extends AppRouter {
       register
     );
 
-    this.post("/failregister", failRegister);
+    this.get("/failregister", failRegister);
 
     //login
     this.post(
@@ -64,7 +64,7 @@ export default class SessionRouter extends AppRouter {
     this.get("/logout", passportCall("jwt"), logout);
 
     //validación cuenta
-    this.get("/verify-user/:user", getVerifyUser)
+    this.get("/verify-user/:token", getVerifyUser);
 
      //editar contraseña
      this.post("/forget-password", forgetPassword);
