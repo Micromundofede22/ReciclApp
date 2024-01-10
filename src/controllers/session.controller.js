@@ -9,6 +9,9 @@ export const register = (req, res) => {
 };
 
 export const failRegister = (req, res) => {
+  if(req.body === "Datos incompletos"){
+    res.sendRequestError("Faltan datos por cargar");
+  }
     res.sendError("User ya existe");
 };
 

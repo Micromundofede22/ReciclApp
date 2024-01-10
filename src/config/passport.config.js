@@ -47,7 +47,7 @@ const initializePassport = () => {
         try {
           
           if(!first_name || !last_name || !street || !height || !email || !age || !role ){
-            return done(null, false);
+            return done("Datos incompletos", false);
           };
 
           const token= generateRandomString(10);
@@ -59,6 +59,7 @@ const initializePassport = () => {
 
           //COLLECTOR
           if (role == "collector") {
+            if(!adminCollector) return done("Datos incompletos", false);
             const collector = await CollectorService.getOne({
               email: username,
             });
