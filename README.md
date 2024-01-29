@@ -29,7 +29,7 @@ El desafío fue propuesto por el docente Alex Marín, una vez terminado el curso
 De este modo, mi mayor desafío fue armar una app cuya lógica la inicié desde 0, y por ende, a medida que avanzaba el proyecto, se me venían nuevas ideas superadoras a las anteriores, por lo que debía deshacer un gran porcentaje de la lógica hecha y arrancar nuevamente. Esto ayudó a cosechar mi paciencia y perseverar en la finalización del proyecto. El trabajo hormiga, día a día, durante un mes, culminó en lo que ven aquí codeado. 
 
 ## Documento .env
-Añadir documento .env con las siguientes variables globales, y su
+Añadir documento .env con las siguientes variables globales, y su consiguiente información:
 
 PORT
 MONGO_URI
