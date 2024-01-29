@@ -117,6 +117,7 @@ const initializePassport = () => {
             verifiedAccount: "UNVERIFIED",
             shiftsWallet: shiftsWallet._id,
             pointsWallet: newPointsWallet._id,
+            status: "inactive",
             service: "local",
             imageProfile: "usuario.jpg",
           };

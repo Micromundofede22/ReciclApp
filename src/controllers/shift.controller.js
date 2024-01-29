@@ -155,7 +155,7 @@ export const updateShiftConfirmed = async (req, res) => {
     const shiftNotConfirmed = await ShiftsService.getById(sid); //turno del usuario
     const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
 
-    if (!shiftNotConfirmed) return res.sendRequestError("Petición incorrecta");
+    if (!shiftNotConfirmed) return res.sendRequestError("Turno no encontrado");
 
     //si año, mes,dia y hora coinciden, NO TOMA EL TURNO
     const incompatibleShift= shiftsWalletCollector.shiftsConfirmed.find(item=>{
@@ -225,6 +225,8 @@ export const updateShiftAbsent = async (req, res) => {
       sw_idCollector
     );
 
+    const shift= await shiftsWalletCollector.shiftsConfirmed.find(item=> item.shift._id === scid);
+    if(!shift) return res.sendRequestError("Turno no encontrado");
     //sw collector
     await shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
@@ -272,6 +274,9 @@ export const updateShiftReconfirm = async (req, res) => {
     const user = req.user.tokenInfo;
     const swUser_ID = user.shiftsWallet.toString();
     const shiftsWalletUser = await ShiftsWalletService.getById(swUser_ID);
+
+    const shift= shiftsWalletUser.shiftsAbsents.find(item=> item.shift._id === said);
+    if(!shift) return res.sendRequestError("Turno no encontrado");
 
     shiftsWalletUser.shiftsAbsents.forEach(async (item, index) => {
       if (item.shift._id.toString() === said) {
@@ -325,6 +330,9 @@ export const updateShiftReconfirmCollector = async (req, res) => {
     const shiftsWalletCollector = await ShiftsWalletService.getById(
       sw_idCollector
     );
+
+    const shift= await shiftsWalletCollector.shiftsAbsents.find(item=> item.shift._id === srcid);
+    if(!shift) return res.sendRequestError("Turno no encontrado");
 
     await shiftsWalletCollector.shiftsAbsents.forEach(async (item, index) => {
       if (item.shift._id.toString() === srcid) {
@@ -418,6 +426,9 @@ export const updateReAsignCollector = async (req, res) => {
     const shiftsWalletAdminCollector = await ShiftsWalletService.getById(
       swAC_id
     );
+
+    const shift= await shiftsWalletAdminCollector.shiftsCanceled.find(item=> item.shift._id === scid);
+    if(shift) return res.sendRequestError("Turno no encontrado");
 
     shiftsWalletAdminCollector.shiftsCanceled.forEach(async (item, index) => {
       if (item.shift._id.toString() === scid) {
@@ -540,6 +551,9 @@ export const updateDoneShift = async (req, res) => {
     if (!shiftsWalletCollector)
       return res.sendRequestError("Petición incorrecta");
 
+    const shift= shiftsWalletCollector.shiftsConfirmed.find((item)=> item.shift._id === scid);
+    if(!shift) return res.sendRequestError("Turno no encontrado");
+
     await shiftsWalletCollector.shiftsConfirmed.forEach(async (item) => {
       //si collector modifica kg por body
       if (
@@ -558,7 +572,7 @@ export const updateDoneShift = async (req, res) => {
         item.shift.done = done;
       }
       //se pasan los puntos a la pointsWallet del user, en notEnabledPoints
-      //y luego en finalized se le habilitarán  a la propiedad enabledpoints
+      //y luego en finalized se le habilitarán esos puntos a la propiedad enabledpoints
       const user = await UserService.getEmail({
         email: item.shift.emailUser,
       });
@@ -701,6 +715,10 @@ export const cancelShift = async (req, res) => {
     const swUser_ID = user.shiftsWallet.toString();
     const shiftsWalletUser = await ShiftsWalletService.getById(swUser_ID);
 
+    const shiftNotConfirmed= shiftsWalletUser.shiftNotConfirmed.find(item=> item.shift._id === shiftCancelID);
+    const shiftConfirmed= shiftsWalletUser.shiftsConfirmed.find(item=> item.shift._id === shiftCancelID);
+    if(!shiftNotConfirmed && !shiftConfirmed) return res.sendRequestError("Turno no encontrado")
+    
     //si shift aun está pendiente, lo busca en shiftsNotConfirmed
     if (shiftsWalletUser.shiftsNotConfirmed.length > 0) {
       await shiftsWalletUser.shiftsNotConfirmed.forEach(async (item, index) => {
@@ -776,6 +794,9 @@ export const cancelCollectorShift = async (req, res) => {
     if (!shiftsWalletCollector)
       return res.sendRequestError("Petición incorrecta");
 
+      const shift= shiftsWalletCollector.shiftsConfirmed.find(item=> item.shift._id === scid);
+      if(!shift) return res.sendRequestError("Turno no encontrado");
+
     //data admincollector
     const emailAdminCollector = collector.adminCollector;
     const adminCollector = await UserService.getEmail({
@@ -825,6 +846,9 @@ export const invalidAdminCollectorShift = async (req, res) => {
     const collector = await CollectorService.getById(cid);
     const sw_id = collector.shiftsWallet.toString();
     const shiftsWalletCollector = await ShiftsWalletService.getById(sw_id);
+
+    const shift= shiftsWalletCollector.shiftsConfirmed.find(item=> item.shift._id === scid);
+    if(!shift) return res.sendRequestError("Turno no encontrado");
 
     shiftsWalletCollector.shiftsConfirmed.forEach(async (item, index) => {
       //si el turno está confirmado y también realizado (done= true), modificar sus pointsWallet
