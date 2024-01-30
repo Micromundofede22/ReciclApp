@@ -32,14 +32,15 @@ export const createShift = async (req, res) => {
   try {
     const user = req.user.tokenInfo;
     const swid = req.params.swid;
+    const data = req.body;
     if (user.shiftsWallet.toString() != swid)
       return res.unauthorized("No autorizado");
     if (user.status === "inactive")
       return res.unauthorized(
         "Su cuenta está inactiva aún. Cargue los documentos requeridos para activarla"
       );
+    if(!data.date || !data.month || !data.year || !data.time) return res.sendRequestError("Datos incompletos");
 
-    const data = req.body;
     const shiftsWallet = await ShiftsWalletService.getById(swid);
 
     let totalPoints = 0;
@@ -51,6 +52,7 @@ export const createShift = async (req, res) => {
       return res.sendRequestError(
         "Usted no tiene productos agregados para reciclar"
       );
+
 
     //turno en collecion: turnos no confirmados
     const result = await ShiftsService.create({
